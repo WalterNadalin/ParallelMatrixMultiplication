@@ -2,4 +2,4 @@
 
 module load autoload spectrum_mpi
 make
-mpirun -np 4 ./a.out
+mpirun -np 4 ./multiplication.x
