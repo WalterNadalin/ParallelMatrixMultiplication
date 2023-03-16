@@ -19,9 +19,9 @@ which is an example of a *serial* code, that is a code which run on only one com
 Here, my goal is to implement a parallel code in `C` to perform such an operation given any number $m$ of computational units.
  
 These are the things done or to be done:
- 
-- [x] Implement a working code using only MPI
-  - [x] Implement a working code when $n$ multiple of $m$
-    - [x] Add feature to read matrices from file
-    - [ ] Add some testing
-  - [ ] Implement a working code when $n$ generic 
+1. Implement a working code using only MPI
+- [x] Implement a working code when $n$ multiple of $m$
+- [x] Add feature to read matrices from file
+- [ ] Add some testing
+- [ ] Implement a working code when $n$ generic 
+2. ...
