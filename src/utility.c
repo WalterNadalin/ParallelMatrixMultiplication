@@ -1,11 +1,11 @@
 #include "utility.h"
 
-void print(double* A, int n, int m) {
-  for(int i = 0; i < m; i++) {
-    for(int j = 0; j < n; j++) fprintf(stdout, "%.3g ", A[j + (i * n)]);
+void print(double* A, int n, int m, char *name) {
+  FILE *file = fopen(name, "a");
 
-    fprintf(stdout, "\n");
-  }
+  for(int i = 0; i < m * n; i++) fprintf(file, "%lf ", A[i]);
+
+  fclose(file);
 }
 
 void fill(double* A, int n, int m, double value) {
@@ -13,13 +13,15 @@ void fill(double* A, int n, int m, double value) {
     A[i] = value;
 }
 
-void distributed_print(double* A, int n, int loc, int prc, int id) {
+void distributed_print(double* A, int n, int loc, int prc, int id, char *name) {
+  fclose(fopen(name, "w"));
+  
   if(id == 0) {
-    print(A, n, loc);
+    print(A, n, loc, name);
 
     for(int i = 1; i < prc; i++) {
       MPI_Recv(A, loc * n, MPI_DOUBLE, i, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-      print(A, n, loc);
+      print(A, n, loc, name);
     }
   }
   else MPI_Send(A, loc * n, MPI_DOUBLE, 0, id, MPI_COMM_WORLD);
@@ -43,14 +45,8 @@ void get_slices(double *a, double *b, double *A, double *B, int id, int root, in
 
     fscanf(file, "%d", &n);
 
-    for (int i = 0; i < n * n; i++) {
-      fscanf(file, "%lf", &a[i]);
-      printf("%f\n", a[i]);
-    }
-
-    for (int i = 0; i < n * n; i++) {
-      fscanf(file, "%lf", &b[i]);
-    }
+    for (int i = 0; i < n * n; i++) fscanf(file, "%lf", &a[i]);
+    for (int i = 0; i < n * n; i++) fscanf(file, "%lf", &b[i]);
 
     fclose(file);
   }

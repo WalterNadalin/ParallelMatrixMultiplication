@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
-#include <string.h>
 #include "utility.h"
 
 int main(int argc, char** argv) {
@@ -10,6 +9,7 @@ int main(int argc, char** argv) {
   double *a, *b, *A, *B, *C, *bfr;
   MPI_Datatype contiguous;  
   char *name = "data/matrices.txt";
+  char *result = "data/result.txt";
 
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
           C[clm * loc + j + i * n] += A[k + i * n] * bfr[k * loc + j]; 
   }
 
-  distributed_print(C, n, loc, prc, id);
+  distributed_print(C, n, loc, prc, id, result);
 
   free(A);
   free(B);
