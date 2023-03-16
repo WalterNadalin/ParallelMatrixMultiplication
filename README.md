@@ -20,4 +20,8 @@ Here, my goal is to implement a parallel code in `C` to perform such an operatio
  
 These are the things done or to be done:
  
-- [ ] implement a working code using only MPI
+- [x] Implement a working code using only MPI
+  - [x] Implement a working code when $n$ multiple of $m$
+    - [x] Add feature to read matrices from file
+    - [ ] Add some testing
+  - [ ] Implement a working code when $n$ generic 
