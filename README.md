@@ -23,5 +23,5 @@ These are the things done or to be done:
 - [x] Implement a working code when $n$ multiple of $m$
 - [x] Add feature to read matrices from file
 - [x] Add some testing
-- [ ] Implement a working code when $n$ generic 
+- [x] Implement a working code when $n$ generic 
 2. ...
