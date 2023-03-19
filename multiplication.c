@@ -4,46 +4,67 @@
 #include "utility.h"
 
 int main(int argc, char** argv) {
-  int root = 0;
-  int n, id, prc, loc;   
-  double *a, *b, *A, *B, *C, *bfr;
-  MPI_Datatype contiguous;  
-  char *name = "data/matrices.txt";
-  char *result = "data/result.txt";
+  int n, id, prc, loc, rst, cnt, upr, root = 0; 
+  int *counts, *displs;  
+  double *A, *B, *C, *bfr;
+  char *data = "data/matrices.txt", *result = "data/result.txt";
+  MPI_Datatype cntgs;  
 
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
   MPI_Comm_size(MPI_COMM_WORLD, &prc);
 
-  get_dimension(id, root, &n, name); 
-  loc = n / prc;
-
+  get_dimension(root, &n, data); 
+  rst = n % prc;
+  loc = (id < rst) ? n / prc + 1 : n / prc;
+  cnt = (rst) ? n / prc + 1 : n / prc;
+  upr = (rst) ? prc - 1 : prc;
+  
+  MPI_Type_vector(loc, cnt, n, MPI_DOUBLE, &cntgs);
+  MPI_Type_commit(&cntgs);
+  
+  counts = (int *) malloc(prc * sizeof(int));
+  displs = (int *) malloc(prc * sizeof(int));
   A = (double *) malloc(n * loc * sizeof(double));
   B = (double *) malloc(n * loc * sizeof(double));
-  C = (double *) malloc(n * loc * sizeof(double));
-  bfr = (double *) malloc(n * loc * sizeof(double));
- 
-  get_slices(a, b, A, B, id, root, n, loc, name); 
-  fill(C, n, loc, (double)0);
+  C = calloc(n * loc, sizeof(double));
+  bfr = (double *) malloc(n * cnt * sizeof(double));
 
-  MPI_Type_vector(loc, loc, n, MPI_DOUBLE, &contiguous);
-  MPI_Type_commit(&contiguous);
+  get_counts(counts, displs, n, cnt);
+  get_slices(A, B, root, n, loc, data); 
 
-  for(int clm = 0; clm < prc; clm++) {
-    MPI_Allgather(B + clm * loc, 1, contiguous, bfr, loc * loc, MPI_DOUBLE, MPI_COMM_WORLD);
+  for(int m = 0; m < upr; m++) {
+    MPI_Allgatherv(B + m * cnt, 1, cntgs, bfr, counts, displs, MPI_DOUBLE, MPI_COMM_WORLD);
 
     for(int i = 0; i < loc; i++)
-      for(int j = 0; j < loc; j++)
+      for(int j = 0; j < cnt; j++)
         for(int k = 0; k < n; k++)
-          C[clm * loc + j + i * n] += A[k + i * n] * bfr[k * loc + j]; 
+          C[m * cnt + j + i * n] += A[k + i * n] * bfr[k * cnt + j]; 
   }
+  
+  if(rst) {
+    rst = n % cnt;
+    
+    MPI_Type_vector(loc, rst, n, MPI_DOUBLE, &cntgs);
+    MPI_Type_commit(&cntgs);
+    
+    get_counts(counts, displs, n, rst);
+    MPI_Allgatherv(B + upr * cnt, 1, cntgs, bfr, counts, displs, MPI_DOUBLE, MPI_COMM_WORLD);
 
-  distributed_print(C, n, loc, prc, id, result);
+    for(int i = 0; i < loc; i++)
+      for(int j = 0; j < rst; j++)
+        for(int k = 0; k < n; k++)
+          C[upr * cnt + j + i * n] += A[k + i * n] * bfr[k * rst + j]; 
+  }
+  
+  distributed_print(C, n, loc, result);
 
   free(A);
   free(B);
   free(C);
   free(bfr);
+  free(counts);
+  free(displs);
 
   MPI_Finalize();
 

@@ -2,10 +2,16 @@ import sys
 from random import random
 
 n = int(sys.argv[1])
-A = [random() for _ in range(n * n)]
-B = [random() for _ in range(n * n)] 
+A = [[random() for _ in range(n)] for _ in range(n)]
+B = [[random() for _ in range(n)] for _ in range(n)] 
 
 with open('data/matrices.txt', 'w') as text:
   text.write(str(n) + '\n')
-  text.write(' '.join(str(value) for value in A) + '\n')
-  text.write(' '.join(str(value) for value in B) + '\n') 
+
+  for line in A:
+    text.write(' '.join(str(value) for value in line) + '\n')
+  
+  text.write('\n');
+
+  for line in B:
+    text.write(' '.join(str(value) for value in line) + '\n') 

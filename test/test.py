@@ -13,18 +13,18 @@ class bcolors:
 
 with open('data/matrices.txt', 'r') as text:
   n = int(next(text))
-  A = [float(x) for x in next(text).split()]
-  B = [float(x) for x in next(text).split()]
+  A = [[float(x) for x in next(text).split()] for _ in range(n)]
+  next(text)
+  B = [[float(x) for x in next(text).split()] for _ in range(n)]
   C = [0. for _ in range(n * n)]
-  R = [0. for _ in range(n * n)]
 
 for i in range(n):
   for j in range(n):
     for k in range(n):
-      C[i * n + j] += A[i * n + k] * B[k * n + j]
+      C[i * n + j] += A[i][k] * B[k][j]
 
 with open('data/result.txt', 'r') as text:
-  R = [float(x) for x in next(text).split()]
+  R = [float(value) for line in text for value in line.split()]
 
 flag = 0
 
