@@ -27,9 +27,9 @@ int main() {
   clock_t second = clock();
 	
   for(int i = 0; i < n; i++)
-  for(int j = 0; j < n; j++)
-  for(int k = 0; k < n; k++)
-  C[i * n + j] += A[i* n + k] * B[k * n + j];
+    for(int j = 0; j < n; j++)
+      for(int k = 0; k < n; k++)
+        C[i * n + j] += A[i* n + k] * B[k * n + j];
 
 
   clock_t third = clock();
