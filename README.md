@@ -14,9 +14,24 @@ for(i = 0; i < n; i++)
       C[i][j] += A[i][k] + B[k][j];
  ```
  
-which is an example of a *serial* code, that is a code which run on only one computation unit.
+which is an example of a *serial* code (implemented in `test\serial_multiplication.c`), that is a code which run on only one computation unit.
  
-Here, my goal is to implement a parallel code in `C` to perform such an operation given any number $m$ of computational units.
+Here, my goal is to implement a parallel code in `C` to perform such an operation given any number $m$ of computational units. 
+
+To compile and run one should install a library which implements the MPI standard (for example https://www.open-mpi.org/ or https://www.mpich.org/) and the `mpicc` wrapper for `gcc`, in particular:
+- to compile you can use the command `make` in the main directory
+- to run there are two bash scripts which allows you simply to run or also to test (that is, checking the result with a serial implementation) the parallel implementation, respectively they are `scripts\run.sh` and `scripts\test.h`. Both of them require at least one parameter, the number of processors, and you can also give the dimension of the square matrices of which to compute the multiplication (which are generated randomly and contained in the file `data\matrices.txt`). For example, to generate two random $n\times n$ matrices and to run the program with $m$ processes you should type
+  ```bash
+  bash .\scripts\run.sh n m
+  ```
+  or, if you want only to run the program on $m$ processes without generating any matrix, use
+  ```bash
+  bash .\scripts\run.sh m
+  ```
+  and analogously for the other script. The result will be contained in the file `data\result.txt`.
+  
+If you want to give your own matrices you should write them in the file `data\matrices.txt` and also write in it (before them) their dimension.
+
  
 These are the things done or to be done:
 1. Implement a working code using only MPI
