@@ -1,7 +1,7 @@
 #!/bin/bash
 
-module load autoload spectrum_mpi
-module load autoload python/3.7.7
+#module load autoload spectrum_mpi
+#module load autoload python/3.7.7
 
 if [ $# -eq 0 ]
 then

@@ -29,9 +29,13 @@ int main(int argc, char** argv) {
   B = (double *) malloc(n * loc * sizeof(double));
   C = calloc(n * loc, sizeof(double));
   bfr = (double *) malloc(n * cnt * sizeof(double));
-
+  
+  double first = MPI_Wtime();
+  
   get_counts(counts, displs, n, cnt);
-  get_slices(A, B, root, n, loc, data); 
+  get_slices(A, B, root, n, loc, data); // 'gg', cit. Gallo
+
+  double second = MPI_Wtime();
 
   for(int m = 0; m < upr; m++) {
     MPI_Allgatherv(B + m * cnt, 1, cntgs, bfr, counts, displs, MPI_DOUBLE, MPI_COMM_WORLD);
@@ -45,6 +49,7 @@ int main(int argc, char** argv) {
   if(rst) {
     rst = n % cnt;
     
+    MPI_Type_free(&cntgs);
     MPI_Type_vector(loc, rst, n, MPI_DOUBLE, &cntgs);
     MPI_Type_commit(&cntgs);
     
@@ -57,7 +62,14 @@ int main(int argc, char** argv) {
           C[upr * cnt + j + i * n] += A[k + i * n] * bfr[k * rst + j]; 
   }
   
+  double third = MPI_Wtime();
+  
   distributed_print(C, n, loc, result);
+  
+  double io_time = (MPI_Wtime() - third) + (second - first);
+  double cp_time = third - second;
+  
+  if(id == root) printf("\nParallel read and write: %f [s]\nParallel computation:\t %f [s]\n", io_time, cp_time);
 
   free(A);
   free(B);
@@ -65,7 +77,7 @@ int main(int argc, char** argv) {
   free(bfr);
   free(counts);
   free(displs);
-
+  MPI_Type_free(&cntgs);
   MPI_Finalize();
 
   return 0;

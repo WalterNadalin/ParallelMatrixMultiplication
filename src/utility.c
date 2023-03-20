@@ -1,6 +1,9 @@
 #include "utility.h"
 
 void print(double* A, int n, int m, FILE *file) {
+  /*
+  Prints a 2-dimensional array beginning at position `A` with dimensions `n` rows time `m` columns.
+  */
   for(int i = 0; i < m; i++) {
     for(int j = 0; j < n; j++) fprintf(file, "%lf ", A[i * n + j]);
 
@@ -8,12 +11,11 @@ void print(double* A, int n, int m, FILE *file) {
   }
 }
 
-void fill(double* A, int n, int m, double value) {
-  for(int i = 0; i < n * m; i++)
-    A[i] = value;
-}
-
 void distributed_print(double* A, int n, int m, char *name) {
+  /*
+  Prints a 2-dimensional array of which the parts are distributed among different MPI processes as
+  vertical slices.
+  */
   int id, prc, loc, rst, cnt; 
 
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
@@ -22,10 +24,10 @@ void distributed_print(double* A, int n, int m, char *name) {
   loc = n / prc;
   rst = n % prc;
 
-  if(id == 0) {
+  if(id == 0) { // The root receives all the parts and prints them in the correct order
     FILE *file = stdout;
     double *bfr = (double *)malloc(m * n * sizeof(double));
-    int flag = strcmp(name, "stdout");
+    int flag = strcmp(name, "stdout"); // Option to print to `stdout`
 
     if(flag) {
       fclose(fopen(name, "w"));
@@ -42,10 +44,14 @@ void distributed_print(double* A, int n, int m, char *name) {
 
     if(flag) fclose(file);
   }
-  else MPI_Send(A, m * n, MPI_DOUBLE, 0, id, MPI_COMM_WORLD);
+  else MPI_Send(A, m * n, MPI_DOUBLE, 0, id, MPI_COMM_WORLD); // Each process sends its part
 }
 
 void get_dimension(int root, int *n, char *name) {
+  /*
+  Gets the dimension of the square matrix from the file called `name`, it is supposed that the 
+  dimension is the first entry of the file.
+  */
   int id; 
 
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
@@ -60,6 +66,10 @@ void get_dimension(int root, int *n, char *name) {
 }
 
 void get_counts(int *counts, int *displs, int n, int m) {
+  /*
+  Gets the counts of the elements to send to or receive from each process and the displacement at
+  which get from or place to the elements a buffer.
+  */
   int loc, id, prc, rst;
 
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
@@ -78,36 +88,46 @@ void get_counts(int *counts, int *displs, int n, int m) {
 }
 
 void get_slices(double *A, double *B, int root, int n, int m, char *name) {
-  int id, prc;
-  int *counts, *displs;
-  double *a, *b;
+  /*
+  Reads the matries `A` and `B` to be multiplied from a file and scatters them, by dividing them
+  in vertical sliced, to each process.
+  */
+  int id, prc, cnt;
+  double *bfr;
+  FILE *file;
 
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
   MPI_Comm_size(MPI_COMM_WORLD, &prc);
 
-  if(id == root) {
-    FILE *file = fopen(name, "r");
-    a = (double *)malloc(n * n * sizeof(double));
-    b = (double *)malloc(n * n * sizeof(double));
-    counts = (int *)malloc(prc * sizeof(int));
-    displs = (int *)malloc(prc * sizeof(int));
-
+  if(id == root) { // The root reads the first matrix and sends parts of it
+    file = fopen(name, "r");
+    bfr = (double *)malloc(m * n * sizeof(double));
+    
     fscanf(file, "%d", &n);
-    get_counts(counts, displs, n, n);
-
-    for (int i = 0; i < n * n; i++) fscanf(file, "%lf", &a[i]);
-    for (int i = 0; i < n * n; i++) fscanf(file, "%lf", &b[i]);
+    
+    for(int i = 0; i < n * m; i++) fscanf(file, "%lf", &A[i]);
+    
+    for(int i = 1; i < prc; i++) {
+      cnt = (i < n % prc) ? n / prc + 1 : n / prc;
+      
+      for (int i = 0; i < n * cnt; i++) fscanf(file, "%lf", &bfr[i]);
+      
+      MPI_Send(bfr, cnt * n, MPI_DOUBLE, i, i, MPI_COMM_WORLD); 
+    }
+  } else MPI_Recv(A, m * n, MPI_DOUBLE, root, id, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  
+  if(id == root) { // The root does the same for the second matrix
+    for(int i = 0; i < n * m; i++) fscanf(file, "%lf", &B[i]);
+    
+    for(int i = 1; i < prc; i++) {
+      cnt = (i < n % prc) ? n / prc + 1 : n / prc;
+      
+      for (int i = 0; i < n * cnt; i++) fscanf(file, "%lf", &bfr[i]);
+      
+      MPI_Send(bfr, cnt * n, MPI_DOUBLE, i, i, MPI_COMM_WORLD); 
+    }
 
     fclose(file);
-  }
-
-  MPI_Scatterv(a, counts, displs, MPI_DOUBLE, A, n * m, MPI_DOUBLE, root, MPI_COMM_WORLD);
-  MPI_Scatterv(b, counts, displs, MPI_DOUBLE, B, n * m, MPI_DOUBLE, root, MPI_COMM_WORLD);
-
-  if(id == root) {
-    free(a);
-    free(b);
-    free(counts);
-    free(displs);
-  }
+    free(bfr);
+  } else MPI_Recv(B, m * n, MPI_DOUBLE, root, id, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 }

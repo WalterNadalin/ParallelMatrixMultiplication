@@ -11,7 +11,5 @@ with open('data/matrices.txt', 'w') as text:
   for line in A:
     text.write(' '.join(str(value) for value in line) + '\n')
   
-  text.write('\n');
-
   for line in B:
     text.write(' '.join(str(value) for value in line) + '\n') 

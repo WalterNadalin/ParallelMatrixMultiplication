@@ -7,7 +7,6 @@
 #include<string.h>
 
 void print(double *, int, int, FILE *); // Prints a matrix
-void fill(double *, int, int, double); // Fill a matrix with a given value
 void distributed_print(double *, int, int, char *); // Prints a distributed matrix
 void get_dimension(int, int *, char *); // Reads and share the dimension
 void get_slices(double *, double *, int, int, int, char *);
