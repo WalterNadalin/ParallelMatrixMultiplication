@@ -24,5 +24,6 @@ These are the things done or to be done:
 - [x] Add feature to read matrices from file
 - [x] Add some testing
 - [x] Implement a working code when $n$ generic 
-- [ ] Measure times
+- [x] Measure times
+- ...
 2. ...
