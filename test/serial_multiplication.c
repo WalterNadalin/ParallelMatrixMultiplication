@@ -3,6 +3,7 @@
 #include <time.h>
 #define RED "\x1b[31m"
 #define GREEN "\x1b[32m"
+#define NORMAL "\x1b[m"
 
 int main() {
   int n;
@@ -64,9 +65,11 @@ int main() {
   if(flag) {
     printf("\n%sParallel and serial results are compatible\n", GREEN);
   } else {
-		printf("\n%sParallel and serial results are NOT compatible\n", RED);
-	}
-	
+    printf("\n%sParallel and serial results are NOT compatible\n", RED);
+  }
+
+  printf("%s", NORMAL);
+
   free(A);
   free(B);
   free(C);
