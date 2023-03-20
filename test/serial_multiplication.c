@@ -11,25 +11,25 @@ int main() {
   double *A, *B, *C;
   char *data = "data/matrices.txt", *result = "data/serial_result.txt";
 
-	FILE *file = fopen(data, "r");
-	fscanf(file, "%d", &n);
+  FILE *file = fopen(data, "r");
+  fscanf(file, "%d", &n);
 	
-	A = (double *)malloc(n * n * sizeof(double));
-	B = (double *)malloc(n * n * sizeof(double));
-	C = calloc(n * n, sizeof(double));
+  A = (double *)malloc(n * n * sizeof(double));
+  B = (double *)malloc(n * n * sizeof(double));
+  C = calloc(n * n, sizeof(double));
 
   clock_t first = clock();
   
-	for (int i = 0; i < n * n; i++) fscanf(file, "%lf", &A[i]);
-	for (int i = 0; i < n * n; i++) fscanf(file, "%lf", &B[i]);
+  for (int i = 0; i < n * n; i++) fscanf(file, "%lf", &A[i]);
+  for (int i = 0; i < n * n; i++) fscanf(file, "%lf", &B[i]);
 	
-	fclose(file);
-	clock_t second = clock();
+  fclose(file);
+  clock_t second = clock();
 	
-	for(int i = 0; i < n; i++)
-  	for(int j = 0; j < n; j++)
-    	for(int k = 0; k < n; k++)
-    	  C[i * n + j] += A[i* n + k] * B[k * n + j];
+  for(int i = 0; i < n; i++)
+  for(int j = 0; j < n; j++)
+  for(int k = 0; k < n; k++)
+  C[i * n + j] += A[i* n + k] * B[k * n + j];
 
 
   clock_t third = clock();
