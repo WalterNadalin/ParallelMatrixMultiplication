@@ -18,7 +18,7 @@ which is an example of a *serial* code (implemented in `test\serial_multiplicati
  
 Here, my goal is to implement a parallel code in `C` to perform such an operation given any number $m$ of computational units. 
 
-To compile and run one should install a library which implements the MPI standard (for example https://www.open-mpi.org/ or https://www.mpich.org/) and the `mpicc` wrapper for `gcc`, in particular:
+To compile and run one should install a library which implements the MPI standard (for example https://www.open-mpi.org/ or https://www.mpich.org/) and the `mpicc` wrapper for `gcc`. In particular:
 - to compile you can use the command `make` in the main directory
 - to run there are two bash scripts which allows you simply to run or also to test (that is, checking the result with a serial implementation) the parallel implementation, respectively they are `scripts\run.sh` and `scripts\test.h`. Both of them require at least one parameter, the number of processors, and you can also give the dimension of the square matrices of which to compute the multiplication (which are generated randomly and contained in the file `data\matrices.txt`). For example, to generate two random $n\times n$ matrices and to run the program with $m$ processes you should type
   ```bash
