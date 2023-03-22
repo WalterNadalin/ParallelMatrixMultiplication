@@ -9,7 +9,7 @@ int main() {
   int n;
   int *counts, *displs;
   double *A, *B, *C;
-  char *data = "data/matrices.txt", *result = "data/serial_result.txt";
+  char *data = "data/matrices.txt", *result = "data/serial_result.txt", *times = "data/times.txt";
 
   FILE *file = fopen(data, "r");
   fscanf(file, "%d", &n);
@@ -42,13 +42,18 @@ int main() {
     fprintf(file, "\n");
   }
   
+  
+  fclose(file);
+  
   clock_t io = (clock() - third) + (second - first);
   clock_t cp = third - second;
   double io_time = (double)io / CLOCKS_PER_SEC;
   double cp_time = (double)cp / CLOCKS_PER_SEC;
-  printf("\nSerial read and write:\t %f [s]\nSerial computation:\t %f [s]\n", io_time, cp_time);
-  
+
+  file = fopen(times, "a");
+  fprintf(file, "%d 1 %lf %lf\n", n, io_time, cp_time);
   fclose(file);
+  
   file = fopen("data/result.txt", "r");
  
   for (int i = 0; i < n * n; i++) fscanf(file, "%lf", &A[i]);

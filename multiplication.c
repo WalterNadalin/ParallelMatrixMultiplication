@@ -7,7 +7,8 @@ int main(int argc, char** argv) {
   int n, id, prc, loc, rst, cnt, upr, root = 0; 
   int *counts, *displs;  
   double *A, *B, *C, *bfr;
-  char *data = "data/matrices.txt", *result = "data/result.txt";
+  char *data = "data/matrices.txt", *result = "data/result.txt", *times = "data/times.txt";
+  FILE *file;
   MPI_Datatype cntgs;  
 
   MPI_Init(&argc, &argv);
@@ -69,7 +70,11 @@ int main(int argc, char** argv) {
   double io_time = (MPI_Wtime() - third) + (second - first);
   double cp_time = third - second;
   
-  if(id == root) printf("\nParallel read and write: %f [s]\nParallel computation:\t %f [s]\n", io_time, cp_time);
+  file = fopen(times, "a");
+  
+  if(id == root) fprintf(file, "%d %d %lf %lf\n", n, prc, io_time, cp_time);
+  
+  fclose(file);
 
   free(A);
   free(B);
