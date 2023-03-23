@@ -1,21 +1,51 @@
 #include "utility.h"
 
+double randfrom(double min, double max) {
+  /*
+	 * generate a random floating point number from min to max
+	 * */
+	int id; 
+
+  MPI_Comm_rank(MPI_COMM_WORLD, &id);
+  srand(id * time (NULL));
+  
+  double range = (max - min); 
+  double div = RAND_MAX / range;
+
+  return min + (rand() / div);
+}
+
+void generate_slices(double *A, double *B, int n, int loc) {
+	for(int i = 0; i < n * loc; i++) {
+		A[i] = randfrom(0, 1);
+		B[i] = randfrom(0, 1);
+  }
+}
+
+void serial_multiplication(double *A, double *B, double *C, int dim_a, int dim_b, int dim) {
+  for(int i = 0; i < dim_a; i++)
+    for(int j = 0; j < dim_b; j++)
+      for(int k = 0; k < dim; k++)
+        C[j + i * dim] += A[k + i * dim] * B[k * dim_b + j]; 
+}
+
 void print(double* A, int n, int m, FILE *file) {
   /*
-  Prints a 2-dimensional array beginning at position `A` with dimensions `n` rows time `m` columns.
-  */
+   * Prints a 2-dimensional array beginning at position `A` with dimensions `n` rows time `m` 
+   * columns.
+   * */
   for(int i = 0; i < m; i++) {
-    for(int j = 0; j < n; j++) fprintf(file, "%lf ", A[i * n + j]);
+    for(int j = 0; j < n; j++) fprintf(file, "%.17g ", A[i * n + j]);
 
     fprintf(file, "\n");
   }
 }
 
-void distributed_print(double* A, int n, int m, char *name) {
+void distributed_print(double* A, int n, int m, int clear, char *name) {
   /*
-  Prints a 2-dimensional array of which the parts are distributed among different MPI processes as
-  vertical slices.
-  */
+   * Prints a 2-dimensional array of which the parts are distributed among different MPI processes as
+   * vertical slices.
+   * */
   int id, prc, loc, rst, cnt; 
 
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
@@ -30,7 +60,7 @@ void distributed_print(double* A, int n, int m, char *name) {
     int flag = strcmp(name, "stdout"); // Option to print to `stdout`
 
     if(flag) {
-      fclose(fopen(name, "w"));
+      if(clear) fclose(fopen(name, "w"));
       file = fopen(name, "a");
     }
 
@@ -49,9 +79,9 @@ void distributed_print(double* A, int n, int m, char *name) {
 
 void get_dimension(int root, int *n, char *name) {
   /*
-  Gets the dimension of the square matrix from the file called `name`, it is supposed that the 
-  dimension is the first entry of the file.
-  */
+   * Gets the dimension of the square matrix from the file called `name`, it is supposed that the 
+   * dimension is the first entry of the file.
+   * */
   int id; 
 
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
@@ -67,9 +97,9 @@ void get_dimension(int root, int *n, char *name) {
 
 void get_counts(int *counts, int *displs, int n, int m) {
   /*
-  Gets the counts of the elements to send to or receive from each process and the displacement at
-  which get from or place to the elements a buffer.
-  */
+   * Gets the counts of the elements to send to or receive from each process and the displacement at
+   * which get from or place to the elements a buffer.
+   * */
   int loc, id, prc, rst;
 
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
@@ -89,9 +119,9 @@ void get_counts(int *counts, int *displs, int n, int m) {
 
 void get_slices(double *A, double *B, int root, int n, int m, char *name) {
   /*
-  Reads the matries `A` and `B` to be multiplied from a file and scatters them, by dividing them
-  in vertical sliced, to each process.
-  */
+   * Reads the matries `A` and `B` to be multiplied from a file and scatters them, by dividing them
+   * in vertical sliced, to each process.
+   * */
   int id, prc, cnt;
   double *bfr;
   FILE *file;

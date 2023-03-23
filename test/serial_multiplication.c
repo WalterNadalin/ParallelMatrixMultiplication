@@ -9,7 +9,7 @@ int main() {
   int n;
   int *counts, *displs;
   double *A, *B, *C;
-  char *data = "data/matrices.txt", *result = "data/serial_result.txt", *times = "data/times.txt";
+  char *data = "data/matrices.txt", *result = "data/result.txt", *times = "data/times.txt";
 
   FILE *file = fopen(data, "r");
   fscanf(file, "%d", &n);
@@ -30,29 +30,6 @@ int main() {
     for(int j = 0; j < n; j++)
       for(int k = 0; k < n; k++)
         C[i * n + j] += A[i* n + k] * B[k * n + j];
-
-
-  clock_t third = clock();
-  fclose(fopen(result, "w"));
-  file = fopen(result, "a");
-  
-  for(int i = 0; i < n; i++) {
-    for(int j = 0; j < n; j++) fprintf(file, "%lf ", C[i * n + j]);
-
-    fprintf(file, "\n");
-  }
-  
-  
-  fclose(file);
-  
-  clock_t io = (clock() - third) + (second - first);
-  clock_t cp = third - second;
-  double io_time = (double)io / CLOCKS_PER_SEC;
-  double cp_time = (double)cp / CLOCKS_PER_SEC;
-
-  file = fopen(times, "a");
-  fprintf(file, "%d 1 %lf %lf\n", n, io_time, cp_time);
-  fclose(file);
   
   file = fopen("data/result.txt", "r");
  
@@ -60,17 +37,20 @@ int main() {
   
   fclose(file);
   
+  double eps = 1e-8;
   int flag = 1;
   
-  for (int i = 0; i < n * n; i++) if(abs(A[i] - C[i]) > 1E-7) {
-    flag = 0;
-    break;
+  for (int i = 0; i < n * n; i++) {
+    if(A[i] - C[i] > eps || A[i] - C[i] < -eps) {
+		  flag = 0;
+		  break;
+    }
   }
   
   if(flag) {
-    printf("\n%sParallel and serial results are compatible\n", GREEN);
+    printf("%sParallel and serial results are compatible\n", GREEN);
   } else {
-    printf("\n%sParallel and serial results are NOT compatible\n", RED);
+    printf("%sParallel and serial results are NOT compatible\n", RED);
   }
 
   printf("%s", NORMAL);

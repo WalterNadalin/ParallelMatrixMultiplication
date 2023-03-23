@@ -6,8 +6,9 @@
 int main(int argc, char** argv) {
   int n, id, prc, loc, rst, cnt, upr, root = 0; 
   int *counts, *displs;  
+  double first, second, third, io_time = 0, cp_time = 0;
   double *A, *B, *C, *bfr;
-  char *data = "data/matrices.txt", *result = "data/result.txt", *times = "data/times.txt";
+  char *p, *data = "data/matrices.txt", *result = "data/result.txt", *times = "data/times.txt";
   FILE *file;
   MPI_Datatype cntgs;  
 
@@ -15,11 +16,18 @@ int main(int argc, char** argv) {
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
   MPI_Comm_size(MPI_COMM_WORLD, &prc);
 
-  get_dimension(root, &n, data); 
+  n = strtol(argv[1], &p, 10);
+ 
+#ifdef DEBUG
+  file = fopen(data, "w");
+  fprintf(file, "%d\n", n);
+  fclose(file);
+#endif
+
   rst = n % prc;
   loc = (id < rst) ? n / prc + 1 : n / prc;
   cnt = (rst) ? n / prc + 1 : n / prc;
-  upr = (rst) ? prc - 1 : prc;
+  upr = (rst) ? n / cnt : prc;
   
   MPI_Type_vector(loc, cnt, n, MPI_DOUBLE, &cntgs);
   MPI_Type_commit(&cntgs);
@@ -31,20 +39,26 @@ int main(int argc, char** argv) {
   C = calloc(n * loc, sizeof(double));
   bfr = (double *) malloc(n * cnt * sizeof(double));
   
-  double first = MPI_Wtime();
-  
   get_counts(counts, displs, n, cnt);
-  get_slices(A, B, root, n, loc, data); // 'gg', cit. Gallo
+  generate_slices(A, B, n, loc);
 
-  double second = MPI_Wtime();
+#ifdef DEBUG
+  distributed_print(A, n, loc, 0, data);
+  distributed_print(B, n, loc, 0, data);
+#endif // 'gg', cit. Gallo
 
   for(int m = 0; m < upr; m++) {
+    first = MPI_Wtime();
+    
     MPI_Allgatherv(B + m * cnt, 1, cntgs, bfr, counts, displs, MPI_DOUBLE, MPI_COMM_WORLD);
-
-    for(int i = 0; i < loc; i++)
-      for(int j = 0; j < cnt; j++)
-        for(int k = 0; k < n; k++)
-          C[m * cnt + j + i * n] += A[k + i * n] * bfr[k * cnt + j]; 
+    
+    second = MPI_Wtime();
+    
+    serial_multiplication(A, bfr, C + m * cnt, loc, cnt, n);
+    
+    third = MPI_Wtime();
+    io_time += second - first;
+    cp_time += third - second;
   }
   
   if(rst) {
@@ -53,28 +67,30 @@ int main(int argc, char** argv) {
     MPI_Type_free(&cntgs);
     MPI_Type_vector(loc, rst, n, MPI_DOUBLE, &cntgs);
     MPI_Type_commit(&cntgs);
+
+    first = MPI_Wtime();
     
     get_counts(counts, displs, n, rst);
     MPI_Allgatherv(B + upr * cnt, 1, cntgs, bfr, counts, displs, MPI_DOUBLE, MPI_COMM_WORLD);
-
-    for(int i = 0; i < loc; i++)
-      for(int j = 0; j < rst; j++)
-        for(int k = 0; k < n; k++)
-          C[upr * cnt + j + i * n] += A[k + i * n] * bfr[k * rst + j]; 
+    
+    second = MPI_Wtime();
+    
+    serial_multiplication(A, bfr, C + upr * cnt, loc, rst, n);
+    
+    third = MPI_Wtime();
+    io_time += second - first;
+    cp_time += third - second;
   }
   
-  double third = MPI_Wtime();
-  
-  distributed_print(C, n, loc, result);
-  
-  double io_time = (MPI_Wtime() - third) + (second - first);
-  double cp_time = third - second;
-  
-  file = fopen(times, "a");
-  
-  if(id == root) fprintf(file, "%d %d %lf %lf\n", n, prc, io_time, cp_time);
-  
-  fclose(file);
+#ifdef DEBUG
+  distributed_print(C, n, loc, 1, result);
+#endif  
+
+  if(id == root) {
+    file = fopen(times, "a");
+  	fprintf(file, "%d %d %lf %lf\n", n, prc, io_time, cp_time);
+    fclose(file);
+  }
 
   free(A);
   free(B);

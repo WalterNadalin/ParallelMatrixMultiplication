@@ -1,22 +1,31 @@
 #!/bin/bash
 
 module load autoload spectrum_mpi
-module load autoload python/3.7.7
 
-if [ $# -eq 0 ]
+if [ $# -lt 2 ]
 then
-  echo Arguments missing: dimension '('optional')' and/or number of processors '('mandatory')'
+  echo
+  echo Arguments missing:
+  echo  + number of processors '('mandatory')'
+  echo  + dimension of the square matrices  '('mandatory')'
+  echo  + -DDEBUG flag for the compiler '('optional')'
+  echo
+  echo For example to run the program with n times n matrices on m processors and include
+  echo debugging option '('that is, print matrices generated and result on some files')' use the
+  echo command:
+  echo
+  echo  $ bash ./script/run.sh m n -DDEDUG
+  echo
 fi
 
-if [ $# -eq 1 ]
+if [ $# -eq 2 ]
 then
   make
-  mpirun -np $1 ./multiplication.x
+  mpirun -np $1 ./multiplication.x $2
 fi
 
-if [ $# -gt 1 ]
+if [ $# -gt 2 ]
 then
-  make
-  python ./test/create.py $1
-  mpirun -np $2 ./multiplication.x
+  make debug=$3
+  mpirun -np $2 ./multiplication.x $2
 fi

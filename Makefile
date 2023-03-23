@@ -2,6 +2,10 @@ EXE = multiplication.x
 CXX = mpicc
 CXXFLAGS = -I include
 
+ifdef debug
+	CXXFLAGS += $(debug)
+endif
+
 all: $(EXE)
 
 %.o: %.c
