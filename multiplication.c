@@ -18,10 +18,12 @@ int main(int argc, char** argv) {
 
   n = strtol(argv[1], &p, 10);
  
-#ifdef DEBUG
-  file = fopen(data, "w");
-  fprintf(file, "%d\n", n);
-  fclose(file);
+#ifdef DEBUG 
+  if(id == root) {
+    file = fopen(data, "w");
+    fprintf(file, "%d\n", n);
+    fclose(file);
+  }
 #endif
 
   rst = n % prc;

@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -A a08trb35
+#SBATCH -A tra23_units
 #SBATCH -p m100_usr_prod
 #SBATCH --time 00:15:00       # format: HH:MM:SS
 #SBATCH -N 1                  # 1 node
@@ -10,7 +10,8 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=walter.nadalin@studenti.units.it
 module load autoload spectrum_mpi
-dim=2000
+make
+dim=3000
 prc=2
 
 for value in {1..5}

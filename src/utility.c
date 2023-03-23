@@ -2,13 +2,8 @@
 
 double randfrom(double min, double max) {
   /*
-	 * generate a random floating point number from min to max
-	 * */
-	int id; 
-
-  MPI_Comm_rank(MPI_COMM_WORLD, &id);
-  srand(id * time (NULL));
-  
+   * generate a random floating point number from min to max
+   * */ 
   double range = (max - min); 
   double div = RAND_MAX / range;
 
@@ -16,9 +11,15 @@ double randfrom(double min, double max) {
 }
 
 void generate_slices(double *A, double *B, int n, int loc) {
-	for(int i = 0; i < n * loc; i++) {
-		A[i] = randfrom(0, 1);
-		B[i] = randfrom(0, 1);
+  int id; 
+
+  MPI_Comm_rank(MPI_COMM_WORLD, &id);
+  
+  for(int i = 0; i < n * loc; i++) {
+    srand(id + i + time(NULL));
+    A[i] = randfrom(-1, 1);
+    srand(id + i + 1 + (int)time(NULL));
+    B[i] = randfrom(-1, 1);
   }
 }
 

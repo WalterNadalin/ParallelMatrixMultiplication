@@ -27,5 +27,5 @@ fi
 if [ $# -gt 2 ]
 then
   make debug=$3
-  mpirun -np $2 ./multiplication.x $2
+  mpirun -np $1 ./multiplication.x $2
 fi
