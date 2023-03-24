@@ -34,7 +34,15 @@ int main() {
   file = fopen("data/result.txt", "r");
  
   for (int i = 0; i < n * n; i++) fscanf(file, "%lf", &A[i]);
-  
+
+#ifdef DEBUG
+  for(int i = 0; i < n; i++) {
+    for(int j = 0; j < n; j++) printf("%lf ", C[i * n + j]);
+
+    printf("\n");
+  }
+#endif
+
   fclose(file);
   
   double eps = 1e-8;
@@ -42,8 +50,8 @@ int main() {
   
   for (int i = 0; i < n * n; i++) {
     if(A[i] - C[i] > eps || A[i] - C[i] < -eps) {
-		  flag = 0;
-		  break;
+      flag = 0;
+      break;
     }
   }
   

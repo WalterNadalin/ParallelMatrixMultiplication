@@ -24,10 +24,23 @@ void generate_slices(double *A, double *B, int n, int loc) {
 }
 
 void serial_multiplication(double *A, double *B, double *C, int dim_a, int dim_b, int dim) {
-  for(int i = 0; i < dim_a; i++)
-    for(int j = 0; j < dim_b; j++)
-      for(int k = 0; k < dim; k++)
-        C[j + i * dim] += A[k + i * dim] * B[k * dim_b + j]; 
+  int div = dim_b / 4, upr = div * 4, rst = dim_b % 4, i, j, k;
+  double tmp;
+
+  for(i = 0; i < dim_a; i++)
+    for(k = 0; k < dim; k++) {
+      tmp = A[k + i * dim];
+
+      for(j = 0; j < upr; j += 4) {
+        C[j + i * dim] += tmp * B[k * dim_b + j]; 
+        C[j + 1 + i * dim] += tmp * B[k * dim_b + j + 1]; 
+        C[j + 2 + i * dim] += tmp * B[k * dim_b + j + 2]; 
+        C[j + 3 + i * dim] += tmp * B[k * dim_b + j + 3]; 
+      }
+      
+      for(j = upr; j < dim_b; j++) C[j + i * dim] += tmp * B[k * dim_b + j]; 
+   }
+
 }
 
 void print(double* A, int n, int m, FILE *file) {

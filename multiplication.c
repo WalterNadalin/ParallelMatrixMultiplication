@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
+
+#ifdef DGEMM
+#include <cblas.h>
+#endif
+
 #include "utility.h"
 
 int main(int argc, char** argv) {
@@ -17,7 +22,7 @@ int main(int argc, char** argv) {
   MPI_Comm_size(MPI_COMM_WORLD, &prc);
 
   n = strtol(argv[1], &p, 10);
- 
+
 #ifdef DEBUG 
   if(id == root) {
     file = fopen(data, "w");
@@ -50,14 +55,21 @@ int main(int argc, char** argv) {
 #endif // 'gg', cit. Gallo
 
   for(int m = 0; m < upr; m++) {
+    MPI_Barrier(MPI_COMM_WORLD); /* IMPORTANT */
     first = MPI_Wtime();
     
     MPI_Allgatherv(B + m * cnt, 1, cntgs, bfr, counts, displs, MPI_DOUBLE, MPI_COMM_WORLD);
     
+    MPI_Barrier(MPI_COMM_WORLD);
     second = MPI_Wtime();
-    
+ 
+#ifdef DGEMM  
+    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, loc, cnt, n, 1, A, n, bfr, cnt, 0, C + m * cnt, n);
+#else
     serial_multiplication(A, bfr, C + m * cnt, loc, cnt, n);
-    
+#endif
+
+    MPI_Barrier(MPI_COMM_WORLD);
     third = MPI_Wtime();
     io_time += second - first;
     cp_time += third - second;
@@ -70,15 +82,22 @@ int main(int argc, char** argv) {
     MPI_Type_vector(loc, rst, n, MPI_DOUBLE, &cntgs);
     MPI_Type_commit(&cntgs);
 
+    MPI_Barrier(MPI_COMM_WORLD);
     first = MPI_Wtime();
     
     get_counts(counts, displs, n, rst);
     MPI_Allgatherv(B + upr * cnt, 1, cntgs, bfr, counts, displs, MPI_DOUBLE, MPI_COMM_WORLD);
     
+    MPI_Barrier(MPI_COMM_WORLD);
     second = MPI_Wtime();
     
+#ifdef DGEMM  
+    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, loc, rst, n, 1, A, n, bfr, rst, 0, C + upr * cnt, n);
+#else
     serial_multiplication(A, bfr, C + upr * cnt, loc, rst, n);
+#endif
     
+    MPI_Barrier(MPI_COMM_WORLD);
     third = MPI_Wtime();
     io_time += second - first;
     cp_time += third - second;
@@ -86,11 +105,17 @@ int main(int argc, char** argv) {
   
 #ifdef DEBUG
   distributed_print(C, n, loc, 1, result);
-#endif  
+#endif
 
   if(id == root) {
+#ifdef DGEMM 
+    char *sign = "dgemm";
+#else
+    char *sign = "naive";
+#endif
+    
     file = fopen(times, "a");
-  	fprintf(file, "%d %d %lf %lf\n", n, prc, io_time, cp_time);
+    fprintf(file, "%s %d %d %lf %lf\n", sign, n, prc, io_time, cp_time);
     fclose(file);
   }
 

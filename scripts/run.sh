@@ -1,6 +1,7 @@
 #!/bin/bash
 
 module load autoload spectrum_mpi
+module load autoload openblas
 
 if [ $# -lt 2 ]
 then
@@ -26,6 +27,7 @@ fi
 
 if [ $# -gt 2 ]
 then
-  make debug=$3
+  export OMP_NUM_THREADS=1
+  make flags=$3
   mpirun -np $1 ./multiplication.x $2
 fi
