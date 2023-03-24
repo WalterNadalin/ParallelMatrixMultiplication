@@ -13,7 +13,7 @@
 module load autoload spectrum_mpi
 module load autoload openblas
 make
-dim=10000
+dim=7500
 prc=32
 
 for _ in {1..4}
