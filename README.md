@@ -32,7 +32,7 @@ To compile and run a library which implements the MPI standard is required. In p
   ```bash
   bash .\scripts\run.sh 3 16
   ```
-  will generate two random $16\times 16$ matrices and will run the program with $3$ processes.
+  will generate two random $16\times 16$ matrices and will run the program with $3$ processes,
 - to **test** it is firstly necessaty to compile with the `-DDEBUG` flag and then run the executable generated. This will make the program write the matrices generated in the file `data/matrices.txt` and the matrix obtained from the product in the file `data\result.txt`. It is possible to condense these two step by typing:
   ```bash
   bash .\scripts\run.sh 3 16 debug
