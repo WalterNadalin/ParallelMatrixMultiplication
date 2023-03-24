@@ -18,24 +18,30 @@ which is an example of a *serial* code (implemented in `test\serial_multiplicati
  
 Here, my goal is to implement a parallel code in `C` to perform such an operation given any number $m$ of computational units. 
 
-To compile and run one should install a library which implements the MPI standard (for example https://www.open-mpi.org/ or https://www.mpich.org/) and the `mpicc` wrapper for `gcc`. In particular:
-- to compile you can use the command 
+To compile and run a library which implements the MPI standard is required. In particular:
+- to **compile** it is possible to use the command 
   ```
   make
   ``` 
   in the main directory, it will produce the `multiplication.x` executable,
-- to run there are two bash scripts which allows you simply to run or also to test (that is, checking the result with a serial implementation) the parallel implementation, respectively they are `scripts\run.sh` and `scripts\test.h`. Both of them require at least one parameter, the number of processors, and you can also give the dimension of the square matrices of which to compute the multiplication (which are generated randomly and contained in the file `data\matrices.txt`). For example, to generate two random $n\times n$ matrices and to run the program with $m$ processes you should type
-  ```bash
-  bash .\scripts\run.sh n m
-  ```
-  or, if you want only to run the program on $m$ processes without generating any matrix, use
-  ```bash
-  bash .\scripts\run.sh m
-  ```
-  and analogously for the other script. The result will be contained in the file `data\result.txt`.
+- to **run** there is a bash scripts. It recquires 2 parameters:
+  - the number $m$ of processes,
+  - the size $n$ of the square matrices.
   
-If you want to give your own matrices you should write them in the file `data\matrices.txt` and also write in it (before them) their dimension.
-
+  The executable will generate two $n\times n$ matrices with random entries and multiply them. For example
+  ```bash
+  bash .\scripts\run.sh 3 16
+  ```
+  will generate two random $16\times 16$ matrices and will run the program with $3$ processes.
+- to **test** it is firstly necessaty to compile with the `-DDEBUG` flag and then run the executable generated. This will make the program write the matrices generated in the file `data/matrices.txt` and the matrix obtained from the product in the file `data\result.txt`. It is possible to condense these two step by typing:
+  ```bash
+  bash .\scripts\run.sh 3 16 debug
+  ```
+  that will properly compile and run the program. Now it is possible to use:
+  ```bash
+  bash .\scripts\test.sh
+  ```
+  in order to check if the result obtained is equal, that is each entry is equal up to the $7^{\text{th}}$ digit after decimale point, to the one obtained with the serial implementation.
  
 These are the things done or to be done:
 1. Implement a working code using only MPI
@@ -44,5 +50,7 @@ These are the things done or to be done:
 - [x] Add some testing
 - [x] Implement a working code when $n$ generic 
 - [x] Measure times
+- [x] Compare with `cblas_dgemm(...)`
+- [x] Plot some graph
 - [ ] ...
 2. ...
