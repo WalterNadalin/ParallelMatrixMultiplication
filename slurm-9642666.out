@@ -1,2 +1,0 @@
-mpicc -c multiplication.c -o multiplication.o -I include
-mpicc multiplication.o src/utility.o -o multiplication.x
