@@ -26,7 +26,7 @@ To compile and run a library which implements the MPI standard is required. In p
   in the main directory, it will produce the `multiplication.x` executable,
 - the executable will generate two $n\times n$ matrices with random entries and multiply them. To **run**, for example with 3 processes using $16\times 16$ matrices, it is possible to use the command 
   ```bash
-  mpirun -np 4 ./multiplication.x 16
+  mpirun -np 3 ./multiplication.x 16
   ```
   or to, more conveniently, use a bash scripts. It recquires 2 parameters:
   - the number $m$ of processes,
