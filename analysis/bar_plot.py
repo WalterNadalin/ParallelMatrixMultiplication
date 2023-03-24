@@ -8,25 +8,27 @@ def num(s):
         return float(s)
         
 with open('data/times.txt') as f:
-    data = [[num(x) for x in line.split()] for line in f.readlines()]
-    
-naive = data[:5]
-dgemm = data[5:]
-processors = array([n for _, n, *_ in naive])
-comm = array([t for *_, t, _ in naive])
-naive_comp = array([t for *_, t in naive]) / 15 + 1
-dgemm_comp = array([t for *_, t in dgemm]) / 15 + 1
+    data = [[num(x) for x in line.split()[1:]] for line in f.readlines()]
+
+nodes = 4
+naive = data[:nodes]
+dgemm = data[nodes:]
+processors = array([n for _, n, *_ in naive]) // 32
+naive_comm = array([t for *_, t, _ in naive])
+naive_comp = array([t for *_, t in naive])
+dgemm_comm = array([t for *_, t, _ in dgemm])
+dgemm_comp = array([t for *_, t in dgemm])
 n = naive[0][0]
 
-measures = ((comm, naive_comp), (comm, dgemm_comp))
+measures = ((naive_comm, naive_comp), (dgemm_comm, dgemm_comp))
 
 fig, ax = subplots(layout='constrained')
-bottom = zeros(5)
-width = 0.75
+bottom = zeros(nodes)
+width = 0.2
 multiplier = 0
 i = 0
-bar_colors = ('black', 'red',  'black', 'green')
-label = ("Communication", "Naive computation", None, "DGEMM computation")
+bar_colors = ('black', 'red',  'black', 'yellow')
+label = ("Communication", "Naivë computation", None, "DGEMM computation")
 
 for times in measures:
     offset = width * multiplier - width / 2
@@ -34,11 +36,11 @@ for times in measures:
     for time in times:
         p = ax.bar(processors + offset, time - bottom, width, label = label[i], bottom = bottom, \
                    color = bar_colors[i], edgecolor = 'black')
-        bottom += comm 
+        bottom += times[0] 
         i += 1
 
     multiplier += 1
-    bottom = zeros(5)
+    bottom = zeros(nodes)
 
 ax.set_xticks(processors)
 ax.set_ylabel(r"Time [$s$]")

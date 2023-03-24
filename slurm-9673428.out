@@ -1,7 +1,0 @@
-mpicc -c multiplication.c -o multiplication.o -I include 
-mpicc -o multiplication.x multiplication.o src/utility.o 
-rm src/*.o multiplication.x
-mpicc -c src/utility.c -o src/utility.o -I include -DDGEMM -I /cineca/prod/opt/libraries/openblas/0.3.9/gnu--8.4.0/include/ -L /cineca/prod/opt/libraries/openblas/0.3.9/gnu--8.4.0/lib -lopenblas -lgfortran
-mpicc -c multiplication.c -o multiplication.o -I include -DDGEMM -I /cineca/prod/opt/libraries/openblas/0.3.9/gnu--8.4.0/include/ -L /cineca/prod/opt/libraries/openblas/0.3.9/gnu--8.4.0/lib -lopenblas -lgfortran
-mpicc -o multiplication.x multiplication.o src/utility.o -I /cineca/prod/opt/libraries/openblas/0.3.9/gnu--8.4.0/include/ -L /cineca/prod/opt/libraries/openblas/0.3.9/gnu--8.4.0/lib -lopenblas -lgfortran
-rm src/*.o multiplication.x
