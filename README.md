@@ -45,7 +45,7 @@ To compile and run a library which implements the MPI standard is required. In p
   ```bash
   bash .\scripts\test.sh
   ```
-  in order to check if the result obtained is equal, that is each entry is equal up to the $7^{\text{th}}$ digit after decimale point, to the one obtained with the serial implementation.
+  in order to check if the result obtained is equal, that is each entry is equal up to the $7^{\text{th}}$ digit after decimal point, to the one obtained with the serial implementation.
  
 These are the things done or to be done:
 1. Implement a working code using only MPI
