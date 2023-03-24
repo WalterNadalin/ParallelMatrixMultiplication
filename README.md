@@ -26,7 +26,7 @@ To compile and run a library which implements the MPI standard is required. In p
   in the main directory, it will produce the `multiplication.x` executable,
 - to **run** there is a bash scripts. It recquires 2 parameters:
   - the number $m$ of processes,
-  - the size $n$ of the square matrices.
+  - the size $n$ of the square matrices,
   
   The executable will generate two $n\times n$ matrices with random entries and multiply them. For example
   ```bash
