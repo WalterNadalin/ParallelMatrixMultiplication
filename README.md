@@ -37,7 +37,7 @@ To compile and run a library which implements the MPI standard is required. In p
   ```bash
   bash .\scripts\run.sh 3 16 debug
   ```
-  that will properly compile and run the program. Now it is possible to use:
+  that will properly compile and run the program. After doing this, it is possible to use:
   ```bash
   bash .\scripts\test.sh
   ```
