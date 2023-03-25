@@ -11,7 +11,7 @@ with open('data/times.txt') as f:
     data = [[num(x) for x in line.split()[1:]] for line in f.readlines()]
 
 nodes = 4
-section = 3
+section = 11
 naive = data[nodes * (section - 1):nodes * section]
 dgemm = data[nodes * section:nodes * (section + 1)]
 processors = array([n for _, n, *_ in naive]) // 32
