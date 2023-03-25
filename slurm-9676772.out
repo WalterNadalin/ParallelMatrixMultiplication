@@ -1,0 +1,20 @@
+mpicc -c multiplication.c -o multiplication.o -I include -O3 
+mpicc -o multiplication.x multiplication.o src/utility.o 
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: ./multiplication.x
+Node: r207n12
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+256 total processes failed to start
+rm src/*.o multiplication.x
+rm: cannot remove 'src/*.o': No such file or directory
+rm: cannot remove 'multiplication.x': No such file or directory
+make: *** [Makefile:31: clean] Error 1
+mpicc -c src/utility.c -o src/utility.o -I include -O3 -DDGEMM -I /cineca/prod/opt/libraries/openblas/0.3.9/gnu--8.4.0/include/ -L /cineca/prod/opt/libraries/openblas/0.3.9/gnu--8.4.0/lib -lopenblas -lgfortran
+mpicc -c multiplication.c -o multiplication.o -I include -O3 -DDGEMM -I /cineca/prod/opt/libraries/openblas/0.3.9/gnu--8.4.0/include/ -L /cineca/prod/opt/libraries/openblas/0.3.9/gnu--8.4.0/lib -lopenblas -lgfortran
+mpicc -o multiplication.x multiplication.o src/utility.o -I /cineca/prod/opt/libraries/openblas/0.3.9/gnu--8.4.0/include/ -L /cineca/prod/opt/libraries/openblas/0.3.9/gnu--8.4.0/lib -lopenblas -lgfortran
+rm src/*.o multiplication.x
