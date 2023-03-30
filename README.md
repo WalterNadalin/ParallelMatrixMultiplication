@@ -54,7 +54,8 @@ These are the things done or to be done:
 - [x] Add some testing
 - [x] Implement a working code when $n$ generic 
 - [x] Measure times
+2. Include a version using `dgemm`
 - [x] Compare with `cblas_dgemm(...)`
 - [x] Plot some graph
 - [ ] ...
-2. ...
+3. ...
