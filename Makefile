@@ -1,27 +1,36 @@
 EXE = multiplication.x
 CXX = mpicc
 CXXFLAGS = -I include -O3
-BLAFLAGS = -I ${OPENBLAS_HOME}/include/ -L ${OPENBLAS_HOME}/lib -lopenblas -lgfortran
+OPENBLAS = -I ${OPENBLAS_HOME}/include/ -L ${OPENBLAS_HOME}/lib -lopenblas -lgfortran
+CUBLAS = -lcublas
+SPACE := $(EMPTY) $(EMPTY)
+VAR := UnKnown
+TMP := $(subst a,a ,$(subst b,b ,$(subst c,c ,$(flags))))
 
 ifdef flags
 	ifeq ($(flags), debug)
         	CXXFLAGS += -DDEBUG
 	else ifeq ($(flags), dgemm)
         	CXXFLAGS += -DDGEMM
-	        OPENBLAS = $(BLAFLAGS)
+	        BLASLINK = $(OPENBLAS)
 	else ifeq ($(flags), debugemm)
         	CXXFLAGS += -DDGEMM -DDEBUG
-	        OPENBLAS = $(BLAFLAGS)
+	        BLASLINK = $(OPENBLAS)
+	else ifeq ($(flags), cuda)
+        	CXXFLAGS += -DCUDA
+	        BLASLINK = $(CUBLAS)
 	endif
 endif
 
 all: $(EXE)
 
 %.o: %.c
-	$(CXX) -c $< -o $@ $(CXXFLAGS) $(OPENBLAS)
+	echo $(flags)
+	echo $(TMP)
+	$(CXX) -c $< -o $@ $(CXXFLAGS) $(BLASLINK)
 
 $(EXE): multiplication.o src/utility.o
-	$(CXX) -o $(EXE) $^ $(OPENBLAS)
+	$(CXX) -o $(EXE) $^ $(BLASLINK)
 	@rm multiplication.o
 
 multiplication.o: src/utility.o

@@ -3,7 +3,10 @@
 #include <mpi.h>
 
 #ifdef DGEMM
-#include <cblas.h>
+  #include <cblas.h>
+#elif CUDA
+  #include <cuda_runtime.h>
+  #include "cublas_v2.h"
 #endif
 
 #include "utility.h"
@@ -65,6 +68,8 @@ int main(int argc, char** argv) {
  
 #ifdef DGEMM  
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, loc, cnt, n, 1, A, n, bfr, cnt, 0, C + m * cnt, n);
+#elif CUDA 
+    printf("CUDA!!");
 #else
     serial_multiplication(A, bfr, C + m * cnt, loc, cnt, n);
 #endif
