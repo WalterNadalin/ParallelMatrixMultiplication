@@ -25,13 +25,23 @@ do
 	done
 
 	make clean
-	make flags=dgemm
+	make flag=dgemm
 	export OMP_NUM_THREADS=1
 	prc=32
 
 	for value in {1..4}
 	do
 		mpirun -np $prc -npernode 32 --map-by socket --bind-to core ./multiplication.x $dim 
+		((prc*=2))
+	done
+
+	make clean
+	make cuda flag=cuda
+	prc=4
+
+	for value in {1..4}
+	do
+		mpirun -np $prc -npernode 4 -npersocket 2 --bind-to core ./multiplication.x $dim 
 		((prc*=2))
 	done
 

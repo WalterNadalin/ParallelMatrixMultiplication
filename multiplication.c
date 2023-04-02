@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
 
   int n, id, prc, loc, rst, cnt, upr, root = 0; // Rank, number of processors, ...
   int *counts, *displs; // Counts and displacements for `gathering` the buffer
-  double first, second, third, io_time = 0, cp_time = 0; // For time measures
+  float first, second, third, io_time = 0, cp_time = 0; // For time measures
   double *A, *B, *C, *bfr; // Matrices to multiply, result and current vertical slice
   char *p, *times = "data/times.txt";
   FILE *file;
@@ -74,15 +74,18 @@ int main(int argc, char** argv) {
 #ifdef DGEMM  
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, loc, cnt, n, 1, A, n, bfr, cnt, 0, C + m * cnt, n);
 #elif CUDA
-    cuda_multiplication(A, loc, n, bfr, cnt, C + m * cnt);
+    cuda_multiplication(A, loc, n, bfr, cnt, C + m * cnt, &io_time, &cp_time);
 #else
     serial_multiplication(A, bfr, C + m * cnt, loc, cnt, n);
 #endif
 
     MPI_Barrier(MPI_COMM_WORLD);
     third = MPI_Wtime();
-    io_time += second - first; // Communication time need to set and gather the slic
+    io_time += second - first; // Communication time need to set and gather the slicie
+
+#ifndef CUDA
     cp_time += third - second; // Computation time of the matrix multiplicatio
+#endif
   }
 
   rst = n % cnt; // Columns of the remaining vertical slice
@@ -105,6 +108,8 @@ int main(int argc, char** argv) {
     
 #ifdef DGEMM  
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, loc, rst, n, 1, A, n, bfr, rst, 0, C + upr * cnt, n);
+#elif CUDA
+    cuda_multiplication(A, loc, n, bfr, rst, C + upr * cnt, &io_time, &cp_time);
 #else
     serial_multiplication(A, bfr, C + upr * cnt, loc, rst, n);
 #endif
@@ -112,7 +117,10 @@ int main(int argc, char** argv) {
     MPI_Barrier(MPI_COMM_WORLD);
     third = MPI_Wtime();
     io_time += second - first;
+
+#ifndef CUDA
     cp_time += third - second;
+#endif
   }
   
 #ifdef DEBUG

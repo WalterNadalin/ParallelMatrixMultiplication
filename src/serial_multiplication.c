@@ -50,7 +50,6 @@ int main() {
   
   for (int i = 0; i < n * n; i++) {
     if(A[i] - C[i] > eps || A[i] - C[i] < -eps) {
-      printf("%d %f\n", i, A[i] - C[i]);
       flag = 0;
       break;
     }
