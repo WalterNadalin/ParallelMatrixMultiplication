@@ -1,37 +1,45 @@
 EXE = multiplication.x
 CXX = mpicc
 CXXFLAGS = -I include -O3
-OPENBLAS = -I ${OPENBLAS_HOME}/include/ -L ${OPENBLAS_HOME}/lib -lopenblas -lgfortran
-CUBLAS = -lcublas
-SPACE := $(EMPTY) $(EMPTY)
-VAR := UnKnown
-TMP := $(subst a,a ,$(subst b,b ,$(subst c,c ,$(flags))))
+IBLAS = -I ${OPENBLAS_HOME}/include/
+LBLAS = -L ${OPENBLAS_HOME}/lib -lopenblas -lgfortran
+IMPI = -I ${HPC_SDK_HOME}/Linux_ppc64le/21.5/comm_libs/openmpi/openmpi-3.1.5/include
+LMPI = -L ${HPC_SDK_HOME}/Linux_ppc64le/21.5/comm_libs/openmpi/openmpi-3.1.5/lib -lmpi
+
 
 ifdef flags
 	ifeq ($(flags), debug)
-        	CXXFLAGS += -DDEBUG
+		CXXFLAGS += -DDEBUG
 	else ifeq ($(flags), dgemm)
-        	CXXFLAGS += -DDGEMM
-	        BLASLINK = $(OPENBLAS)
+		CXXFLAGS += -DDGEMM
+		INCLUDE = $(IBLAS)
+		LINK = $(LBLAS)
 	else ifeq ($(flags), debugemm)
-        	CXXFLAGS += -DDGEMM -DDEBUG
-	        BLASLINK = $(OPENBLAS)
+		CXXFLAGS += -DDGEMM -DDEBUG
+		INCLUDE = $(IBLAS)
+		LINK = $(LBLAS)
 	else ifeq ($(flags), cuda)
-        	CXXFLAGS += -DCUDA
-	        BLASLINK = $(CUBLAS)
+		CXX = nvcc
+		CXXFLAGS += -DCUDA
+		INCLUDE = $(IMPI) -lcublas
+		LINK = $(LMPI) -lcublas
+	else ifeq ($(flags), debuda)
+		CXX = nvcc
+		CXXFLAGS += -DCUDA -DDEBUG
+		INCLUDE = $(IMPI) -lcublas
+		LINK = $(LMPI) -lcublas
 	endif
 endif
 
 all: $(EXE)
 
 %.o: %.c
-	echo $(flags)
-	echo $(TMP)
-	$(CXX) -c $< -o $@ $(CXXFLAGS) $(BLASLINK)
+	$(CXX) -c $< -o $@ $(CXXFLAGS) $(INCLUDE)
 
 $(EXE): multiplication.o src/utility.o
-	$(CXX) -o $(EXE) $^ $(BLASLINK)
+	$(CXX) -o $(EXE) $^ $(LINK)
 	@rm multiplication.o
+
 
 multiplication.o: src/utility.o
 src/utility.o: include/utility.h
