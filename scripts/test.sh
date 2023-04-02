@@ -1,4 +1,4 @@
 #!/bin/bash
-gcc test/serial_multiplication.c -o test/serial.x $1
-./test/serial.x
-rm ./test/serial.x
+gcc src/serial_multiplication.c -o src/serial.x $1
+./src/serial.x
+rm ./src/serial.x

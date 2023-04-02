@@ -15,5 +15,6 @@ void get_counts(int *, int *, int, int);
 double randfrom(double, double);
 void generate_slices(double *, double *, int, int);
 void serial_multiplication(double *, double *, double *, int, int, int);
+void cuda_multiplication(double *, int, int, double *, int, double *);
 
 #endif

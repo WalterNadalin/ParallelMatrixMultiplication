@@ -1,48 +1,54 @@
-EXE = multiplication.x
-CXX = mpicc
-CXXFLAGS = -I include -O3
+CXXFLAGS = -O3
+IUTIL = -I include
 IBLAS = -I ${OPENBLAS_HOME}/include/
 LBLAS = -L ${OPENBLAS_HOME}/lib -lopenblas -lgfortran
-#IMPI = -I ${HPC_SDK_HOME}/Linux_ppc64le/21.5/comm_libs/openmpi/openmpi-3.1.5/include
-#LMPI = -L ${HPC_SDK_HOME}/Linux_ppc64le/21.5/comm_libs/openmpi/openmpi-3.1.5/lib -lmpi
 IMPI = -I ${SMPI_ROOT}/include
 LMPI = -L ${SMPI_ROOT}/lib -lmpiprofilesupport -lmpi_ibm
+ICUDA = -I ${CUDA_HOME}/include/
+LCUDA = -L ${CUDA_HOME}/lib64
+INCLUDE = $(IUTIL)
 
-ifdef flags
-	ifeq ($(flags), debug)
+ifdef flag
+	ifeq ($(flag), debug)
 		CXXFLAGS += -DDEBUG
-	else ifeq ($(flags), dgemm)
+	else ifeq ($(flag), dgemm)
 		CXXFLAGS += -DDGEMM
-		INCLUDE = $(IBLAS)
+		INCLUDE += $(IBLAS)
 		LINK = $(LBLAS)
-	else ifeq ($(flags), debugemm)
+	else ifeq ($(flag), debugemm)
 		CXXFLAGS += -DDGEMM -DDEBUG
-		INCLUDE = $(IBLAS)
+		INCLUDE += $(IBLAS)
 		LINK = $(LBLAS)
-	else ifeq ($(flags), cuda)
-		CXX = nvcc
+	else ifeq ($(flag), cuda)
 		CXXFLAGS += -DCUDA
-		INCLUDE = $(IMPI) -lcublas
-		LINK = $(LMPI) -lcublas
-	else ifeq ($(flags), debuda)
-		CXX = nvcc
+	else ifeq ($(flag), debuda)
 		CXXFLAGS += -DCUDA -DDEBUG
-		INCLUDE = $(IMPI) -lcublas
-		LINK = $(LMPI) -lcublas
 	endif
 endif
 
-all: $(EXE)
+.PHONY: all
+all: multiplication.x
+
+cuda: cuda_multiplication.x
 
 %.o: %.c
-	$(CXX) -c $< -o $@ $(CXXFLAGS) $(INCLUDE)
+	mpicc -c $< -o $@ $(CXXFLAGS) $(INCLUDE)
 
-$(EXE): multiplication.o src/utility.o
-	$(CXX) -o $(EXE) $^ $(LINK)
-	@rm multiplication.o
+multiplication.x: multiplication.o src/utility.o 
+	mpicc -o multiplication.x $^ $(LINK)
+	@rm multiplication.o src/utility.o
+
+src/cuda_multiplication.o: src/cuda_multiplication.cu
+	nvcc -c $< -o $@ -lcublas -lcudart
+
+cuda_multiplication.x: multiplication.o src/cuda_multiplication.o src/utility.o 
+	mpicc -o multiplication.x $^ $(LCUDA) -lcublas -lcudart
+	@rm multiplication.o src/utility.o src/cuda_multiplication.o
 
 multiplication.o: src/utility.o
+
 src/utility.o: include/utility.h
 
+.PHONY: clean
 clean:
-	rm src/*.o $(EXE)
+	rm ./*.o src/*.o ./*.x

@@ -1,15 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
+#include "utility.h"
 
 #ifdef DGEMM
   #include <cblas.h>
-#elif CUDA
+#endif
+
+#ifdef CUDA
+  #include <cuda.h>
   #include <cuda_runtime.h>
   #include "cublas_v2.h"
 #endif
-
-#include "utility.h"
 
 int main(int argc, char** argv) {
   MPI_Init(&argc, &argv);
@@ -52,21 +54,6 @@ int main(int argc, char** argv) {
   C = calloc(n * loc, sizeof(double));
   bfr = (double *) malloc(n * cnt * sizeof(double));
 
-#ifdef CUDA
-  double *devA, *devB, *devC; // Matrices on the device
-  cublasHandle_t handle;
-  cublasStatus_t stat;
-  const double alpha = 1, beta = 0; // Parameters for `cublasDgemm`
-
-  cudaMalloc((void**)&devA, n * loc * sizeof(double));
-  cudaMalloc((void**)&devB, n * cnt * sizeof(double));
-  cudaMalloc((void**)&devC, cnt * loc * sizeof(double));
-
-  cublasCreate(&handle);
-
-  cublasSetMatrix(loc, n, sizeof(double), A, loc, devA, loc);
-#endif
-
   get_counts(counts, displs, n, cnt);
   generate_slices(A, B, n, loc); // Creates scattered slices of matrices A and B
 
@@ -86,13 +73,8 @@ int main(int argc, char** argv) {
  
 #ifdef DGEMM  
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, loc, cnt, n, 1, A, n, bfr, cnt, 0, C + m * cnt, n);
-#elif CUDA 
-    cublasSetMatrix(n, cnt, sizeof(double), bfr, n, devB, n);
-
-    cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                cnt, loc, n, &alpha, devB, cnt, devA, n, &beta, devC, cnt);
-
-    cublasGetMatrix(cnt, loc, sizeof(double), devC, cnt, C + cnt * m, n);
+#elif CUDA
+    cuda_multiplication(A, loc, n, bfr, cnt, C + m * cnt);
 #else
     serial_multiplication(A, bfr, C + m * cnt, loc, cnt, n);
 #endif
@@ -151,13 +133,6 @@ int main(int argc, char** argv) {
     fclose(file);
   }
   
-#ifdef CUDA
-  cudaFree(devA);
-  cudaFree(devB);
-  cudaFree(devC);
-  cublasDestroy(handle);
-#endif
-
   free(A);
   free(B);
   free(C);
