@@ -1,6 +1,4 @@
 #!/bin/bash
-
-module load autoload hpc-sdk
 module load autoload spectrum_mpi
 module load autoload openblas
 
@@ -29,6 +27,12 @@ fi
 if [ $# -gt 2 ]
 then
   export OMP_NUM_THREADS=1
+  
+  if [ $3 = cuda ]
+  then
+    module load autoload hpc-sdk
+  fi
+
   make flags=$3
   mpirun -np $1 ./multiplication.x $2
 fi
