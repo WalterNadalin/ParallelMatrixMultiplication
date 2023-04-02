@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <mpi.h>
 #include "utility.h"
+#include "parallelio.h"
+#include "computation.h"
 
 #ifdef DGEMM
   #include <cblas.h>
@@ -125,6 +127,7 @@ int main(int argc, char** argv) {
   
 #ifdef DEBUG
   distributed_print(C, n, loc, 1, result);
+  if(id == root) test(data, result);
 #endif
 
   if(id == root) {

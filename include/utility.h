@@ -1,20 +1,15 @@
 #ifndef UTILITY_H_INCLUDE
 #define UTILITY_H_INCLUDE
 
-#include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
+#define RED "\x1b[31m"
+#define GREEN "\x1b[32m"
+#define NORMAL "\x1b[m"
 
 void print(double *, int, int, FILE *); // Prints a matrix
-void distributed_print(double *, int, int, int, char *); // Prints a distributed matrix
-void get_dimension(int, int *, char *); // Reads and share the dimension
-void get_slices(double *, double *, int, int, int, char *);
-void get_counts(int *, int *, int, int);
-double randfrom(double, double);
-void generate_slices(double *, double *, int, int);
-void serial_multiplication(double *, double *, double *, int, int, int);
-void cuda_multiplication(double *, int, int, double *, int, double *, float *, float *);
+double randfrom(double, double); // Generates a random double
+void test(char *, char *); // Check the correctness of the result
 
 #endif

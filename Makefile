@@ -18,7 +18,7 @@ all: multiplication.x
 %.o: %.c
 	mpicc -c $< -o $@ $(CXXFLAGS) $(IUTIL)
 
-$(EXE): multiplication.o src/utility.o 
+$(EXE): multiplication.o src/parallelio.o src/utility.o src/computation.o
 	mpicc -o $(EXE) $^ $(LINK)
 	@rm ./*.o src/*.o
 
@@ -28,10 +28,10 @@ cuda: cuda_$(EXE)
 cuda_%.o: %.c
 	mpicc -c $< -o $@ -DCUDA $(CXXFLAGS) $(IUTIL)
 
-src/cuda_multiplication.o: src/cuda_multiplication.cu
+src/gpu.o: src/gpu.cu
 	nvcc -c $< -o $@ -lcublas -lcudart
 
-cuda_multiplication.x: cuda_multiplication.o src/cuda_multiplication.o src/cuda_utility.o 
+cuda_$(EXE): cuda_multiplication.o src/cuda_parallelio.o src/cuda_utility.o src/cuda_computation.o src/gpu.o
 	mpicc -o $(EXE) $^ $(LCUDA) -lcublas -lcudart	
 	@rm ./*.o src/*.o
 
@@ -41,13 +41,15 @@ dgemm: dgemm_$(EXE)
 dgemm_%.o: %.c
 	mpicc -c $< -o $@ $(CXXFLAGS) $(IUTIL) $(IBLAS)
 
-dgemm_$(EXE): dgemm_multiplication.o src/dgemm_utility.o 
+dgemm_$(EXE): dgemm_multiplication.o src/dgemm_parallelio.o src/dgemm_utility.o src/dgemm_computation.o
 	mpicc -o $(EXE) $^ $(LBLAS)
 	@rm ./*.o src/*.o
 
-%multiplication.o: src/%utility.o
-
-src/%utility.o: include/%utility.h
+%multiplication.o: src/%parallelio.o src/%utility.o src/%computation.o
+src/%utility.o: include/%utility.h src/%computation.h
+src/%parallelio.o: include/%utility.h include/%parallelio.h
+src/%computation.o: include/%computation.h
+src/gpu.o: src/gpu.h
 
 .PHONY: clean
 clean:
