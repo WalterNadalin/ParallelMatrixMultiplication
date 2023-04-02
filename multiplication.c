@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
 
   // Doing the same thing for the last vertical slice
   if(rst) {
-    // rst = n % cnt;
+    //rst = n % cnt;
     MPI_Type_free(&cntgs);
     MPI_Type_vector(loc, rst, n, MPI_DOUBLE, &cntgs);
     MPI_Type_commit(&cntgs);

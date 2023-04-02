@@ -1,5 +1,6 @@
 #!/bin/bash
 
+module load autoload hpc-sdk
 module load autoload spectrum_mpi
 module load autoload openblas
 

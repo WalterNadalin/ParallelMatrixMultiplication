@@ -24,7 +24,7 @@ void generate_slices(double *A, double *B, int n, int loc) {
 }
 
 void serial_multiplication(double *A, double *B, double *C, int dim_a, int dim_b, int dim) {
-  int div = dim_b / 4, upr = div * 4, rst = dim_b % 4, i, j, k;
+  int div = dim_b / 4, upr = div * 4, i, j, k;
   double tmp;
   double *bfr = calloc(dim_b, sizeof(double));
 
