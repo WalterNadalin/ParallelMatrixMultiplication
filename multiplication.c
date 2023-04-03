@@ -5,10 +5,6 @@
 #include "parallelio.h"
 #include "computation.h"
 
-#ifdef CUDA
-  #include "gpu.h"
-#endif
-
 int main(int argc, char** argv) {
   MPI_Init(&argc, &argv);
   int n, id, prc, loc, rst; // Rank, number of processors, ...
@@ -31,11 +27,11 @@ int main(int argc, char** argv) {
 
   generate_slices(A, B, n, loc); // Creates scattered slices of matrices A and B
 
-#ifdef CUDA
-  cuda_multiplication(A, B, C, n, &io_time, &cp_time);
-#else
+//#ifdef CUDA
+//  cuda_multiplication(A, B, C, n, &io_time, &cp_time);
+//#else
   parallel_multiplication(A, B, C, n, &io_time, &cp_time); // Naive or dgemm parallel multiplication
-#endif
+//#endif
 
 #ifdef DEBUG // Print matrices A, B and C
   char *data = "data/matrices.txt", *result = "data/result.txt";
