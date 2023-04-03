@@ -68,28 +68,6 @@ void get_dimension(int root, int *n, char *name) {
   MPI_Bcast(n, 1, MPI_INT, root, MPI_COMM_WORLD);
 }
 
-void get_counts(int *counts, int *displs, int n, int m) {
-  /*
-   * Gets the counts of the elements to send to or receive from each process and the displacement at
-   * which get from or place to the elements a buffer.
-   * */
-  int loc, id, prc, rst;
-
-  MPI_Comm_rank(MPI_COMM_WORLD, &id);
-  MPI_Comm_size(MPI_COMM_WORLD, &prc);
-  
-  loc = n / prc;
-  rst = n % prc; 
-  displs[0] = 0;
-
-  for(int i = 0; i < prc - 1; i++) { 
-    counts[i] = (i < rst) ? m * (loc + 1) : m * loc;
-    displs[i + 1] = counts[i] + displs[i];
-  }
-
-  counts[prc - 1] = m * loc;
-}
-
 void get_slices(double *A, double *B, int root, int n, int m, char *name) {
   /*
    * Reads the matries `A` and `B` to be multiplied from a file and scatters them, by dividing them

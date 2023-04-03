@@ -1,18 +1,19 @@
-#include "computation.h"
-#include "parallelio.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <mpi.h>
 
 #ifdef DGEMM
   #include <cblas.h>
 #elif CUDA
-	#include <cuda.h>
-	#include <cuda_runtime.h>
-	#include "cublas_v2.h"
+  #include <cuda.h>
+  #include <cuda_runtime.h>
+  #include "cublas_v2.h"
 #endif
 
 extern "C" void serial_multiplication(double *A, double *B, double *C, int dim_a, int dim_b, int dim) {
   int div = dim_b / 4, upr = div * 4, i, j, k;
   double tmp;
-  double *bfr = calloc(dim_b, sizeof(double));
+  double *bfr = (double *)calloc(dim_b, sizeof(double));
 
   for(i = 0; i < dim_a; i++) {
     for(k = 0; k < dim; k++) {
@@ -46,6 +47,28 @@ extern "C" void serial_multiplication(double *A, double *B, double *C, int dim_a
   }
 }
 
+void get_counts(int *counts, int *displs, int n, int m) {
+  /*
+   * Gets the counts of the elements to send to or receive from each process and the 
+   * displacement at which get from or place to the elements a buffer.
+   * */
+  int loc, id, prc, rst;
+
+  MPI_Comm_rank(MPI_COMM_WORLD, &id);
+  MPI_Comm_size(MPI_COMM_WORLD, &prc);
+  
+  loc = n / prc;
+  rst = n % prc; 
+  displs[0] = 0;
+
+  for(int i = 0; i < prc - 1; i++) { 
+    counts[i] = (i < rst) ? m * (loc + 1) : m * loc;
+    displs[i + 1] = counts[i] + displs[i];
+  }
+
+  counts[prc - 1] = m * loc;
+}
+
 #ifdef CUDA
 void gather_multiplication(double *A, double *B, double *C, int n, int loc, int cnt, float *io_time, float *cp_time, double *bfr, int *counts, int *displs, MPI_Datatype cntgs, double *devA, double *devB, double *devC) {
 #else
@@ -72,7 +95,7 @@ void gather_multiplication(double *A, double *B, double *C, int n, int loc, int 
 #ifdef DGEMM  // Compute multiplication 
   cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, loc, cnt, n, 1, A, n, bfr, cnt, 0, C, n);
 #elif CUDA
-	cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, cnt, loc, n, &alpha, devB, cnt, devA, n, &beta, devC, cnt); 
+  cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, cnt, loc, n, &alpha, devB, cnt, devA, n, &beta, devC, cnt); 
 #else
   serial_multiplication(A, bfr, C, loc, cnt, n);
 #endif
@@ -81,8 +104,8 @@ void gather_multiplication(double *A, double *B, double *C, int n, int loc, int 
   third = MPI_Wtime();
   
 #ifdef CUDA
-  cublasGetMatrix(cnt, loc, sizeof(double), devC, cnt, C + m * cnt, n); // Load GPU buffer into CPU 
-  
+  cublasDestroy(handle);
+  cublasGetMatrix(cnt, loc, sizeof(double), devC, cnt, C, n); // Load GPU buffer into CPU  
   MPI_Barrier(MPI_COMM_WORLD);
   fourth = MPI_Wtime();
 
@@ -124,18 +147,35 @@ extern "C" void parallel_multiplication(double *A, double *B, double *C, int n, 
   cudaMalloc((void**)&devA, n * loc * sizeof(double));
   cudaMalloc((void**)&devB, n * cnt * sizeof(double));
   cudaMalloc((void**)&devC, loc * cnt * sizeof(double));
-#else
+  
+  cublasSetMatrix(loc, n, sizeof(double), A, loc, devA, loc);
+#endif
 
-  for(int m = 0; m < upr; m++) gather_multiplication(A, B + m * cnt, C + m * cnt, n, loc, cnt, io_time, cp_time, bfr, counts, displs, cntgs); // Horizontal slice for each vertical slice
+  for(int m = 0; m < upr; m++) 
+#ifdef CUDA
+    gather_multiplication(A, B + m * cnt, C + m * cnt, n, loc, cnt, io_time, cp_time, bfr, counts, displs, cntgs, devA, devB, devC); // Horizontal slice for each vertical slice
+#else
+    gather_multiplication(A, B + m * cnt, C + m * cnt, n, loc, cnt, io_time, cp_time, bfr, counts, displs, cntgs); // Horizontal slice for each vertical slice
+#endif
 
   if(rst) { // Doing the same thing for the last vertical slice
     MPI_Type_free(&cntgs);
     MPI_Type_vector(loc, rst, n, MPI_DOUBLE, &cntgs);
     MPI_Type_commit(&cntgs);
     get_counts(counts, displs, n, rst);
+#ifdef CUDA
+    gather_multiplication(A, B + upr * cnt, C + upr * cnt, n, loc, rst, io_time, cp_time, bfr, counts, displs, cntgs, devA, devB, devC);
+#else
     gather_multiplication(A, B + upr * cnt, C + upr * cnt, n, loc, rst, io_time, cp_time, bfr, counts, displs, cntgs);
+#endif
   }
-  
+
+#ifdef CUDA
+  cudaFree(devA);
+  cudaFree(devB);
+  cudaFree(devC);
+#endif
+
   free(bfr);
   free(counts);
   free(displs);
