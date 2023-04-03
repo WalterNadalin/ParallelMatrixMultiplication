@@ -5,6 +5,6 @@
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
 
-void cuda_multiplication(double *, int, int, double *, int, double *, float *, float *);
+void cuda_multiplication(double *, double *, double *, int, float *, float *);
 
 #endif

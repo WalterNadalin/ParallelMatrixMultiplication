@@ -5,12 +5,7 @@
 #include "parallelio.h"
 #include "computation.h"
 
-#ifdef DGEMM
-  #include <cblas.h>
-#elif CUDA
-  #include <cuda.h>
-  #include <cuda_runtime.h>
-  #include "cublas_v2.h"
+#ifdef CUDA
   #include "gpu.h"
 #endif
 
@@ -37,7 +32,7 @@ int main(int argc, char** argv) {
   generate_slices(A, B, n, loc); // Creates scattered slices of matrices A and B
 
 #ifdef CUDA
-  //cuda_multiplication(A, B, C, n, &io_time, &cp_time);
+  cuda_multiplication(A, B, C, n, &io_time, &cp_time);
 #else
   parallel_multiplication(A, B, C, n, &io_time, &cp_time); // Naive or dgemm parallel multiplication
 #endif
@@ -50,7 +45,7 @@ int main(int argc, char** argv) {
     fprintf(file, "%d\n", n);
     fclose(file);
   }
-
+  
   distributed_print(A, n, loc, 0, data);
   distributed_print(B, n, loc, 0, data);
   distributed_print(C, n, loc, 1, result);

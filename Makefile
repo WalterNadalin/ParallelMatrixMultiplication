@@ -6,6 +6,10 @@ TARGETS = multiplication.o src/parallelio.o src/utility.o src/computation.o
 IBLAS = -I${OPENBLAS_HOME}/include/
 LBLAS = -L${OPENBLAS_HOME}/lib/ -lopenblas -lgfortran
 LCUDA = -L${CUDA_HOME}/lib64/ -lcublas -lcudart
+SMPI_ROOT=/cineca/prod/opt/compilers/spectrum_mpi/10.4.0/binary
+
+IMPI = -I${SMPI_ROOT}/include
+LMPI = -L${SMPI_ROOT}/lib -lmpiprofilesupport -lmpi_ibm
 
 # Conditional flag to toggle the debugging
 ifdef flag
@@ -19,6 +23,7 @@ endif
 all: $(EXE)
 
 .PHONY: dgemm
+dgemm: CXXFLAGS += -DDGEMM
 dgemm: INCLUDE += $(IBLAS)
 dgemm: LINK = $(LBLAS)
 dgemm: $(EXE)
@@ -34,7 +39,7 @@ cuda: src/gpu.o $(EXE)
 	mpicc -c $< -o $@ $(CXXFLAGS) $(INCLUDE)
 
 src/gpu.o: src/gpu.cu # Stupid cuda, you make me look bad
-	nvcc -c $< -o $@ -lcublas -lcudart
+	nvcc -c $< -o $@ $(IMPI) $(LMPI) $(INCLUDE) -lcublas -lcudart
 
 # Creating the executable
 $(EXE): $(TARGETS)

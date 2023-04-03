@@ -43,7 +43,7 @@ void test(char *data, char *result) {
   
   fclose(file);
 	
-	serial_multiplication(A, B, C, n, n, n);
+  serial_multiplication(A, B, C, n, n, n);
   
   file = fopen(result, "r"); 
 
@@ -62,9 +62,9 @@ void test(char *data, char *result) {
   }
   
   if(flag) {
-    printf("%s\nParallel and serial results are compatible :)\n\n", GREEN);
+    printf("%s\nParallel and serial results are compatible\n\n", GREEN);
   } else {
-    printf("%s\nParallel and serial results are NOT compatible :( \n\n", RED);
+    printf("%s\nParallel and serial results are NOT compatible\n\n", RED);
   }
 
   printf("%s", NORMAL);
