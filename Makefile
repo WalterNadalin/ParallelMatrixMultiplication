@@ -16,7 +16,7 @@ endif
 
 # Updating the dependencing in the three cases
 .PHONY: all
-all: multiplication.x
+all: $(EXE)
 
 .PHONY: dgemm
 dgemm: INCLUDE += $(IBLAS)
