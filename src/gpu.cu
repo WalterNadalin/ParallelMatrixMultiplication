@@ -1,6 +1,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
+//#include "gpu.h"
 
 extern "C" void cuda_multiplication(double *A, int m, int n, double *B, int k, double *C, float *io_time, float *cp_time)
 {

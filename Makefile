@@ -1,54 +1,45 @@
+# Note to self: Makefile goes brrrrr
 CXXFLAGS = -O3
 EXE = multiplication.x
-INCLUDE = -I include
-IBLAS = -I ${OPENBLAS_HOME}/include/
-LBLAS = -L ${OPENBLAS_HOME}/lib -lopenblas -lgfortran
-ICUDA = -I ${CUDA_HOME}/include/
-LCUDA = -L ${CUDA_HOME}/lib64
+INCLUDE = -I./include/
+TARGETS = multiplication.o src/parallelio.o src/utility.o src/computation.o
+IBLAS = -I${OPENBLAS_HOME}/include/
+LBLAS = -L${OPENBLAS_HOME}/lib/ -lopenblas -lgfortran
+LCUDA = -L${CUDA_HOME}/lib64/ -lcublas -lcudart
 
+# Conditional flag to toggle the debugging
 ifdef flag
 	ifeq ($(flag), debug)
 		CXXFLAGS += -DDEBUG
 	endif
 endif
 
+# Updating the dependencing in the three cases
 .PHONY: all
 all: multiplication.x
 
+.PHONY: dgemm
+dgemm: INCLUDE += $(IBLAS)
+dgemm: LINK = $(LBLAS)
+dgemm: $(EXE)
+
+.PHONY: cuda
+cuda: CXXFLAGS += -DCUDA 
+cuda: LINK = $(LCUDA)
+cuda: CUDA_TARGET = src/gpu.o
+cuda: src/gpu.o $(EXE)
+
+# Compiling the object files
 %.o: %.c
 	mpicc -c $< -o $@ $(CXXFLAGS) $(INCLUDE)
 
-$(EXE): multiplication.o src/parallelio.o src/utility.o src/computation.o
-	mpicc -o $(EXE) $^ $(LINK)
-	@rm ./*.o src/*.o
-
-.PHONY: cuda
-cuda: cuda_$(EXE)
-
-cuda_%.o: %.c
-	mpicc -c $< -o $@ -DCUDA $(CXXFLAGS) $(INCLUDE)
-
-src/gpu.o: src/gpu.cu
+src/gpu.o: src/gpu.cu # Stupid cuda, you make me look bad
 	nvcc -c $< -o $@ -lcublas -lcudart
 
-cuda_$(EXE): cuda_multiplication.o src/cuda_parallelio.o src/cuda_utility.o src/cuda_computation.o src/gpu.o
-	mpicc -o $(EXE) $^ $(LCUDA) -lcublas -lcudart	
+# Creating the executable
+$(EXE): $(TARGETS)
+	mpicc -o $(EXE) $^ $(CUDA_TARGET) $(LINK)
 	@rm ./*.o src/*.o
-
-.PHONY: dgemm
-dgemm: dgemm_$(EXE)
-
-dgemm_%.o: %.c
-	mpicc -c $< -o $@ $(CXXFLAGS) $(INCLUDE) $(IBLAS)
-
-dgemm_$(EXE): dgemm_multiplication.o src/dgemm_parallelio.o src/dgemm_utility.o src/dgemm_computation.o
-	mpicc -o $(EXE) $^ $(LBLAS)
-	@rm ./*.o src/*.o
-
-%multiplication.o: src/%parallelio.o src/%utility.o src/%computation.o
-src/%utility.o: include/%utility.h src/%computation.h
-src/%parallelio.o: include/%utility.h include/%parallelio.h
-src/%computation.o: include/%computation.h
 
 .PHONY: clean
 clean:
