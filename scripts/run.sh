@@ -31,10 +31,10 @@ then
     mpirun -np $1 ./multiplication.x $2
   else
     make $3
-    mpirun -np $1 ./multiplication.x $2
+    mpirun -np $1 ./main.x $2
   fi
 else
   export OMP_NUM_THREADS=1 
   make $3 flag=$4
-  mpirun -np $1 ./multiplication.x $2
+  mpirun -np $1 ./main.x $2
 fi
