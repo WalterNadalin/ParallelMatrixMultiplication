@@ -19,7 +19,9 @@ which is an example of a *serial* code (implemented in `test\serial_multiplicati
  
 Here, my goal is to implement a parallel code in `C` to perform such an operation given any number $m$ of computational units. 
 
-To compile and run a library which implements the MPI standard and the CUDA toolkit are required. In particular, the `Makefile` assumes wrapper `mpicc` and the compiler `nvcc` are available.
+**Important note**: the code has been written to compile and run on the Marconi100 supercomputer at CINECA.
+
+To compile and run a library which implements the `Spectum_MPI` and the `cuda` modules must be loaded. In particular, the `Makefile` assumes wrapper `mpicc` and the compiler `nvcc` are available.
 
 ### Compilation
 ---
