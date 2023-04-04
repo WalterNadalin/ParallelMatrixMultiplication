@@ -15,7 +15,7 @@ for(i = 0; i < n; i++)
       C[i][j] += A[i][k] + B[k][j];
  ```
  
-which is an example of a *serial* code (implemented in `test\serial_multiplication.c`), that is a code which run on only one computation unit.
+which is an example of a *serial* code.
  
 Here, my goal is to implement a parallel code in `C` to perform such an operation given any number $m$ of computational units. 
 
