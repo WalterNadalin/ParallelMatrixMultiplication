@@ -26,12 +26,7 @@ int main(int argc, char** argv) {
   C = calloc(n * loc, sizeof(double));
 
   generate_slices(A, B, n, loc); // Creates scattered slices of matrices A and B
-
-//#ifdef CUDA
-//  cuda_multiplication(A, B, C, n, &io_time, &cp_time);
-//#else
   parallel_multiplication(A, B, C, n, &io_time, &cp_time); // Naive or dgemm parallel multiplication
-//#endif
 
 #ifdef DEBUG // Print matrices A, B and C
   char *data = "data/matrices.txt", *result = "data/result.txt";

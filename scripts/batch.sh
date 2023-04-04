@@ -2,7 +2,7 @@
 #SBATCH -A tra23_units
 #SBATCH -p m100_usr_prod
 #SBATCH --time 01:00:00       # format: HH:MM:SS
-#SBATCH -N 8                  # nodes
+#SBATCH -N 2                  # nodes
 #SBATCH --ntasks-per-node=32  # tasks out of 128
 #SBATCH --gres=gpu:4          # gpus per node out of 4
 #SBATCH --mem=246000          # memory per node out of 246000MB
@@ -20,7 +20,7 @@ do
 
 	for _ in {1..4}
 	do
-		mpirun -np $prc -npernode 32 --map-by socket --bind-to core ./multiplication.x $dim 
+		#mpirun -np $prc -npernode 32 --map-by socket --bind-to core ./multiplication.x $dim 
 		((prc*=2))
 	done
 
@@ -31,15 +31,15 @@ do
 
 	for value in {1..4}
 	do
-		mpirun -np $prc -npernode 32 --map-by socket --bind-to core ./multiplication.x $dim 
+		#mpirun -np $prc -npernode 32 --map-by socket --bind-to core ./multiplication.x $dim 
 		((prc*=2))
 	done
 
 	make clean
-	make cuda flag=cuda
+	make cuda
 	prc=4
 
-	for value in {1..4}
+	for value in {1..2}
 	do
 		mpirun -np $prc -npernode 4 -npersocket 2 --bind-to core ./multiplication.x $dim 
 		((prc*=2))
