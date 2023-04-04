@@ -11,6 +11,10 @@
 #endif
 
 extern "C" void serial_multiplication(double *A, double *B, double *C, int dim_a, int dim_b, int dim) {
+  /* 
+   * Serial matrix multiplication between `A` with dimension `dim_a` times `dim` and B of
+   * dimension `dim` times `dim_b`, result is written in C.
+   * */
   int div = dim_b / 4, upr = div * 4, i, j, k;
   double tmp;
   double *bfr = (double *)calloc(dim_b, sizeof(double));

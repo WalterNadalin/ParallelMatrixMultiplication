@@ -20,11 +20,11 @@ int main(int argc, char** argv) {
 
   MPI_Barrier(MPI_COMM_WORLD);
   first = MPI_Wtime();
-  if(id == 0) generate_matrices(n, data);
+ 
+  // if(id == 0) generate_matrices(n, data);
+ 
   MPI_Barrier(MPI_COMM_WORLD);
   second = MPI_Wtime();
-  
-  if(id == 0) printf("%f \n", second - first);
   
   rst = n % prc;
   loc = (id < rst) ? n / prc + 1 : n / prc; // Local rows number of the horizontal slices
@@ -36,20 +36,19 @@ int main(int argc, char** argv) {
   B = (double *) malloc(n * loc * sizeof(double));
   C = calloc(n * loc, sizeof(double));
 
-  //generate_slices(A, B, n, loc); // Creates scattered slices of matrices A and B
-  get_slices(A, B, 0, data);
+  generate_slices(A, B, n, loc); // Creates scattered slices of matrices A and B
+  // get_slices(A, B, 0, data);
   
   MPI_Barrier(MPI_COMM_WORLD);
   second = MPI_Wtime();
   
-  io_time += second - first;
+  // io_time += second - first;
 
   parallel_multiplication(A, B, C, n, &io_time, &cp_time); // Naive or dgemm parallel multiplication
 
-//  if(id == 0) printf("%f \n", second - first);
 #ifdef DEBUG // Print matrices A, B and C
   char *result = "data/result.txt";
-/*
+
   if(id == 0) {
     file = fopen(data, "w");
     fprintf(file, "%d\n", n);
@@ -57,7 +56,7 @@ int main(int argc, char** argv) {
   }
   
   distributed_print(A, n, loc, 0, data);
-  distributed_print(B, n, loc, 0, data);*/
+  distributed_print(B, n, loc, 0, data);
   distributed_print(C, n, loc, 1, result);
 
   if(id == 0) test(data, result);

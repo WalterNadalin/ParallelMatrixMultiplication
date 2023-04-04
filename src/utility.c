@@ -13,7 +13,8 @@ double randfrom(double min, double max) {
 
 void print(double* A, int n, int m, FILE *file) {
   /*
-   * Prints a 2-dimensional array beginning at position `A` with dimensions `n` rows time `m`   * columns.
+   * Prints a 2-dimensional array beginning at position `A` with dimensions `n` rows time `m` 
+   * columns.
    * */
   int j;
 
@@ -44,8 +45,8 @@ void generate_matrices(int n, char *data) {
 
 void test(char *data, char *result) {
   /*
-   * Tests with a serial matrix multiplication if the multiplication of the matrices in `data` is 
-   * equal to the matrices in `result`.
+   * Tests with a serial matrix multiplication if the multiplication of the matrices in `data`
+   * is equal to the matrices in `result`.
    * */
   int n, matches;
   double *A, *B, *C;

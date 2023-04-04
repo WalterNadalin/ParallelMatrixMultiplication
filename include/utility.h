@@ -8,9 +8,9 @@
 #define GREEN "\x1b[32m"
 #define NORMAL "\x1b[m"
 
-void print(double *, int, int, FILE *); // Prints a matrix
 double randfrom(double, double); // Generates a random double
+void print(double *, int, int, FILE *); // Prints a matrix
 void test(char *, char *); // Check the correctness of the result
-void generate_matrices(int, char *);
+void generate_matrices(int, char *); // Generates a writes on file two matrices
 
 #endif

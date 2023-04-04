@@ -68,29 +68,18 @@ void get_dimension(int root, int *n, char *name) {
   MPI_Bcast(n, 1, MPI_INT, root, MPI_COMM_WORLD);
 }
 
-void get_slices(double *A, double *B, int root, char *name) {
-  /*
-   * Reads the matries `A` and `B` to be multiplied from a file and scatters them, by dividing them
-   * in vertical sliced, to each process.
-   * */
-  int n, rst, m, id, prc, cnt, matches;
-  double *bfr;
-  FILE *file;
+void get_matrix(double *A, int n, int root, FILE *file) {
+  int m, id, prc;
 
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
   MPI_Comm_size(MPI_COMM_WORLD, &prc);
   
+  m = (id < n % prc) ? n / prc + 1 : n / prc; // Local rows number of the horizontal slices
+  
   if(id == root) { // The root reads the first matrix and sends parts of it
-    file = fopen(name, "r");
-    matches = fscanf(file, "%d", &n);
-  }
-
-  MPI_Bcast(&n, 1, MPI_INT, root, MPI_COMM_WORLD);
-  rst = n % prc;
-  m = (id < rst) ? n / prc + 1 : n / prc; // Local rows number of the horizontal slices
- 
-  if(id == root) { // The root reads the first matrix and sends parts of it
-
+    double *bfr;
+    int cnt, j, matches;
+    
     bfr = (double *)malloc(m * n * sizeof(double));
     
     for(int i = 0; i < n * m; i++) matches = fscanf(file, "%lf", &A[i]);
@@ -98,24 +87,34 @@ void get_slices(double *A, double *B, int root, char *name) {
     for(int i = 1; i < prc; i++) {
       cnt = (i < n % prc) ? n / prc + 1 : n / prc;
       
-      for (int i = 0; i < n * cnt; i++) matches = fscanf(file, "%lf", &bfr[i]);
+      for(j = 0; j < n * cnt; j++) matches = fscanf(file, "%lf", &bfr[j]);
      
       MPI_Send(bfr, cnt * n, MPI_DOUBLE, i, i, MPI_COMM_WORLD); 
     }
-  } else MPI_Recv(A, m * n, MPI_DOUBLE, root, id, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-  
-  if(id == root) { // The root does the same for the second matrix
-    for(int i = 0; i < n * m; i++) matches = fscanf(file, "%lf", &B[i]);
     
-    for(int i = 1; i < prc; i++) {
-      cnt = (i < n % prc) ? n / prc + 1 : n / prc;
-      
-      for (int i = 0; i < n * cnt; i++) matches = fscanf(file, "%lf", &bfr[i]);
-      
-      MPI_Send(bfr, cnt * n, MPI_DOUBLE, i, i, MPI_COMM_WORLD); 
-    }
-
-    fclose(file);
     free(bfr);
-  } else MPI_Recv(B, m * n, MPI_DOUBLE, root, id, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  } else MPI_Recv(A, m * n, MPI_DOUBLE, root, id, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+}
+
+void get_slices(double *A, double *B, int root, char *name) {
+  /*
+   * Reads the matries `A` and `B` to be multiplied from a file and scatters them, by dividing them
+   * in vertical sliced, to each process.
+   * */
+  int n, id, matches;
+  FILE *file;
+
+  MPI_Comm_rank(MPI_COMM_WORLD, &id);
+  
+  if(id == root) { // The root reads the first matrix and sends parts of it
+    file = fopen(name, "r");
+    matches = fscanf(file, "%d", &n);
+  }
+
+  MPI_Bcast(&n, 1, MPI_INT, root, MPI_COMM_WORLD);
+  
+  get_matrix(A, n, root, file);
+  get_matrix(B, n, root, file);
+
+  if(id == root) fclose(file);
 }
