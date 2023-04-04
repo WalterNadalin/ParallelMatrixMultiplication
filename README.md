@@ -19,11 +19,11 @@ which is an example of a *serial* code (implemented in `test\serial_multiplicati
  
 Here, my goal is to implement a parallel code in `C` to perform such an operation given any number $m$ of computational units. 
 
-To compile and run a library which implements the MPI standard is required, the script also assumes that the wrapper `mpicc` is available.
+To compile and run a library which implements the MPI standard and the CUDA toolkit are required. In particular, the `Makefile` assumes wrapper `mpicc` and the compiler `nvcc` are available.
 
 ### Compilation
 ---
-to **compile** it is possible to use the command 
+To **compile** it is possible to use the command 
 ```
 make
 ``` 
