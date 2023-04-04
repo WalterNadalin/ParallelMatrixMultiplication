@@ -46,4 +46,4 @@ $(EXE): $(TARGETS)
 
 .PHONY: clean
 clean:
-	rm ./*.o src/*.o ./*.x ./slurm-*
+	rm ./*.o src/*.o ./*.x #./slurm-*
