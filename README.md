@@ -29,7 +29,7 @@ To **compile** it is possible to use the command
 ```
 make [version]
 ``` 
-where `[version]` can be either empty, `dgemm` or `cuda`. This will produce the `multiplication.x` executable. 
+where `[version]` can be either blank, `dgemm` or `cuda`. This will produce the `multiplication.x` executable. 
 
 ### Execution
 ---
@@ -45,7 +45,7 @@ For example
 ```bash
 bash ./scripts/run.sh 3 16 [version]
 ```
-where `[version]` can be either empty, `dgemm` or `cuda`. The program will generate two random $16\times 16$ matrices and will run the program with $3$ processes. 
+where `[version]` can be either blank, `dgemm` or `cuda`. The program will generate two random $16\times 16$ matrices and will run the program with $3$ processes. 
 
 ### Testing and debugging
 ---
@@ -53,7 +53,7 @@ To **test** it is necessary to compile with the `debug` paramater
 ```bash
 bash ./scripts/run.sh 3 16 [version] debug
 ```
-where `[version]` can be either empty, `dgemm` or `cuda`. This will make the program write the matrices generated in the file `data/matrices.txt` and the resulting one in `result.txt`. Then the program will check if the result written is compatible with the one obtained with a serial implementation of the multiplication.
+where `[version]` can be either blank, `dgemm` or `cuda`. This will make the program write the matrices generated in the file `data/matrices.txt` and the resulting one in `result.txt`. Then the program will check if the result written is compatible with the one obtained with a serial implementation of the multiplication.
 
 ## To do list
 These are the things done or to be done:
