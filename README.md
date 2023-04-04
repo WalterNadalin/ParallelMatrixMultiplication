@@ -60,11 +60,11 @@ These are the things done or to be done:
 - [x] Add some testing
 - [x] Implement a working code when $n$ generic 
 - [x] Measure performances
-2. Include a version using `cblas_dgemm` instead of the serial multiplication
+2. Include a version using `cblas_dgemm` instead of the serial multiplication done by each MPI process
 - [x] Make it work
 - [x] Make some plots to compare performances with serial version
 3. Port on GPU 
-- [x] Include a version using `cublasDgemm` instead of the serial multiplication
+- [x] Include a version using `cublasDgemm` instead of the serial multiplication done by each MPI process
 - [x] Make some plots to compare performances with serial and `cblas_dgemm` versions
 - [ ] Implement a working matrix multiplication in `Cuda` og a GPU device
 - [ ] ...
