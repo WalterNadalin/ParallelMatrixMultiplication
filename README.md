@@ -65,6 +65,6 @@ These are the things done or to be done:
 - [x] Make some plots to compare performances with serial version
 3. Port on GPU 
 - [x] Include a version using `cublasDgemm` instead of the serial multiplication
-- [x] Make some plots to compare performances with serial and `cblas_dgemm` version
+- [x] Make some plots to compare performances with serial and `cblas_dgemm` versions
 - [ ] Implement a working matrix multiplication in `Cuda` og a GPU device
 - [ ] ...
