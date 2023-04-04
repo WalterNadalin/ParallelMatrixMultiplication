@@ -11,5 +11,6 @@
 void print(double *, int, int, FILE *); // Prints a matrix
 double randfrom(double, double); // Generates a random double
 void test(char *, char *); // Check the correctness of the result
+void generate_matrices(int, char *);
 
 #endif

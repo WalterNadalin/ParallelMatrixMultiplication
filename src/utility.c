@@ -13,14 +13,33 @@ double randfrom(double min, double max) {
 
 void print(double* A, int n, int m, FILE *file) {
   /*
-   * Prints a 2-dimensional array beginning at position `A` with dimensions `n` rows time `m` 
-   * columns.
+   * Prints a 2-dimensional array beginning at position `A` with dimensions `n` rows time `m`   * columns.
    * */
+  int j;
+
   for(int i = 0; i < m; i++) {
-    for(int j = 0; j < n; j++) fprintf(file, "%.17g ", A[i * n + j]);
+    for(j = 0; j < n; j++) fprintf(file, "%.17g ", A[i * n + j]);
 
     fprintf(file, "\n");
   }
+}
+
+void generate_matrices(int n, char *data) {
+  FILE *file = fopen(data, "w");
+
+  fprintf(file, "%d\n", n);
+  int j;
+
+  for(int i = 0; i < 2 * n; i++) {
+    for(j = 0; j < n; j++) {
+      srand(j + i + time(NULL));
+      fprintf(file, "%.17g ", randfrom(-1, 1));
+    }
+
+    fprintf(file, "\n");
+  }
+  
+  fclose(file);
 }
 
 void test(char *data, char *result) {
