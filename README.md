@@ -33,7 +33,7 @@ where `[version]` can be either blank, `dgemm` or `cuda`. This will produce the 
 
 ### Execution
 ---
-The executable will generate two $n\times n$ matrices with random entries and multiply them. To **run**, for example with 3 processes using $16\times 16$ matrices, it is possible to use the command 
+The executable will generate two $n\times n$ matrices with random entries and multiply them. To **run**, for example with 3 processes using $16\times 16$ matrices, it is possible either to use the command 
 ```bash
 mpirun -np 3 ./multiplication.x 16
 ```
@@ -49,7 +49,11 @@ where `[version]` can be either blank, `dgemm` or `cuda`. The program will gener
 
 ### Testing and debugging
 ---
-To **test** it is necessary to compile with the `debug` paramater
+To **test** it is possible either to pass the `flag=debug` variable to the `Makefile`
+```bash
+make [version] flag=debug
+```
+and then run the `multiplication.x` executable or to compile and run using the script with the `debug` parameter
 ```bash
 bash ./scripts/run.sh 3 16 [version] debug
 ```
