@@ -1,7 +1,8 @@
 #!/bin/bash
+
 #SBATCH -A tra23_units
 #SBATCH -p m100_usr_prod
-#SBATCH --time 01:00:00       # format: HH:MM:SS
+#SBATCH --time 00:30:00       # format: HH:MM:SS
 #SBATCH -N 2                  # nodes
 #SBATCH --ntasks-per-node=32  # tasks out of 128
 #SBATCH --gres=gpu:4          # gpus per node out of 4
@@ -10,10 +11,11 @@
 #SBATCH --job-name=wanda_parallel_multiplication
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=walter.nadalin@studenti.units.it
+
 module load autoload spectrum_mpi
 module load autoload openblas
 
-for dim in {5000..25000..5000}
+for dim in {5000..5000..5000}
 do
 	make
 	prc=32

@@ -142,11 +142,11 @@ extern "C" void parallel_multiplication(double *A, double *B, double *C, int n, 
   get_counts(counts, displs, n, cnt);
   
 #ifdef CUDA
-  //cudaSetDevice(id % 4);
+  int devices;
+  cudaGetDeviceCount(&devices);
+  cudaSetDevice(id % devices);
   int device;
   cudaGetDevice(&device);
-  int nDevices;
-  cudaGetDeviceCount(&nDevices);
   printf("%d %d %d\n", id, device, devices);
   
   double *devA, *devB, *devC; // Matrices on the device
