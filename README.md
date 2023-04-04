@@ -37,15 +37,15 @@ The executable will generate two $n\times n$ matrices with random entries and mu
 ```bash
 mpirun -np 3 ./multiplication.x 16
 ```
-or to, more conveniently, use a bash scripts. It recquires 2 parameters:
+or to, more conveniently, use the `./scripts/run.sh` bash scripts. It recquires 2 parameters:
 - the number $m$ of processes,
 - the size $n$ of the square matrices.
   
 For example
 ```bash
-bash ./scripts/run.sh 3 16
+bash ./scripts/run.sh 3 16 [version]
 ```
-will generate two random $16\times 16$ matrices and will run the program with $3$ processes,
+where `[version]` can be either empty, `dgemm` or `cuda`. The program will generate two random $16\times 16$ matrices and will run the program with $3$ processes. 
 
 ### Testing and debugging
 ---
