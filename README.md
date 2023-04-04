@@ -27,7 +27,7 @@ To compile and run a library which implements the `Spectum_MPI` and the `cuda` m
 ---
 To **compile** it is possible to use the command 
 ```
-make `[version]`
+make [version]
 ``` 
 where `[version]` can be either empty, `dgemm` or `cuda`. This will produce the `multiplication.x` executable. 
 
