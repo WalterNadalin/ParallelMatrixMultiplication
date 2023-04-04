@@ -1,4 +1,5 @@
 # Parallel matrix multiplication
+
 Given two $n$-dimensional square matrices $A, B \in\mathcal{M}_{n}(\mathbb{R})$ defined on the real field, it is know that the matrix multiplication $C=AB\in\mathcal{M}_n(\mathbb{R})$ is defined as
 
 $$
@@ -18,45 +19,52 @@ which is an example of a *serial* code (implemented in `test\serial_multiplicati
  
 Here, my goal is to implement a parallel code in `C` to perform such an operation given any number $m$ of computational units. 
 
-To compile and run a library which implements the MPI standard is required. In particular:
-- to **compile** it is possible to use the command 
-  ```
-  make
-  ``` 
-  in the main directory, it will produce the `multiplication.x` executable,
-- the executable will generate two $n\times n$ matrices with random entries and multiply them. To **run**, for example with 3 processes using $16\times 16$ matrices, it is possible to use the command 
-  ```bash
-  mpirun -np 3 ./multiplication.x 16
-  ```
-  or to, more conveniently, use a bash scripts. It recquires 2 parameters:
-  - the number $m$ of processes,
-  - the size $n$ of the square matrices.
+To compile and run a library which implements the MPI standard is required, the script also assumes that the wrapper `mpicc` is available.
+
+### Compilation
+---
+to **compile** it is possible to use the command 
+```
+make
+``` 
+in the main directory, it will produce the `multiplication.x` executable,
+
+### Execution
+---
+The executable will generate two $n\times n$ matrices with random entries and multiply them. To **run**, for example with 3 processes using $16\times 16$ matrices, it is possible to use the command 
+```bash
+mpirun -np 3 ./multiplication.x 16
+```
+or to, more conveniently, use a bash scripts. It recquires 2 parameters:
+- the number $m$ of processes,
+- the size $n$ of the square matrices.
   
-  For example
-  ```bash
-  bash .\scripts\run.sh 3 16
-  ```
-  will generate two random $16\times 16$ matrices and will run the program with $3$ processes,
-- to **test** it is first necessary to compile with the `-DDEBUG` flag and then run the executable generated. This will make the program write the matrices generated in the file `data/matrices.txt` and the matrix obtained from the product in the file `data\result.txt`. It is possible to condense these two step by typing:
-  ```bash
-  bash .\scripts\run.sh 3 16 debug
-  ```
-  that will properly compile and run the program. After doing this, it is possible to use:
-  ```bash
-  bash .\scripts\test.sh
-  ```
-  in order to check if the result obtained is equal, that is each entry is equal up to the $7^{\text{th}}$ digit after decimal point, to the one obtained with the serial implementation.
- 
+For example
+```bash
+bash .\scripts\run.sh 3 16
+```
+will generate two random $16\times 16$ matrices and will run the program with $3$ processes,
+
+### Testing and debugging
+---
+To **test** it is first necessary to compile with the `debug` paramater
+```bash
+bash .\scripts\run.sh 3 16 debug
+```
+this will make the program write the matrices generated in the file `data/matrices.txt` and the resulting one in `result.txt`. Then the program will check if the result writtern is compatible with the one obtained with a serial implementation of the multiplication.
+
+## To do list
 These are the things done or to be done:
 1. Implement a working code using only MPI
 - [x] Implement a working code when $n$ multiple of $m$
-- [x] Add feature to read matrices from file
 - [x] Add some testing
 - [x] Implement a working code when $n$ generic 
-- [x] Measure times
-2. Include a version using `dgemm`
-- [x] Compare with `cblas_dgemm(...)`
-- [x] Plot some graph
-- [ ] ...
-3. Port on GPU
+- [x] Measure performances
+2. Include a version using `cblas_dgemm` instead of the serial multiplication
+- [x] Make it work
+- [x] Make some plots to compare performances with serial version
+3. Port on GPU 
+- [x] Include a version using `cublasDgemm` instead of the serial multiplication
+- [x] Make some plots to compare performances with serial and `cblas_dgemm` version
+- [ ] Implement a working matrix multiplication in `Cuda` og a GPU device
 - [ ] ...
