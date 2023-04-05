@@ -1,51 +1,66 @@
 from matplotlib.pyplot import savefig, subplots, show, title, suptitle
 from numpy import array, zeros, arange
 
+nodes_number = 4
+
 def num(s):
     try:
         return int(s)
     except ValueError:
         return float(s)
-        
-with open('data/times.txt') as f:
-    data = [[num(x) for x in line.split()[1:]] for line in f.readlines()]
 
-nodes = 4
-sections = [2 * n + 1 for n in range(19)]
+lines = 0    
+section_witdh = nodes_number * 3
+data = []
 
-for section in sections:
-	naive = data[nodes * (section - 1):nodes * section]
-	dgemm = data[nodes * section:nodes * (section + 1)]
-	processors = array([n for _, n, *_ in naive]) // 32
-	naive_comm = array([t for *_, t, _ in naive])
-	naive_comp = array([t for *_, t in naive])
-	dgemm_comm = array([t for *_, t, _ in dgemm])
-	dgemm_comp = array([t for *_, t in dgemm])
+with open('data/times.txt') as file:	
+	for line in file.readlines():
+		data += [[num(x) for x in line.split()[1:]]]
+		lines += 1
+
+sections = lines // section_witdh
+
+for s in range(sections):
+	naive = data[s * section_witdh : nodes_number + s * section_witdh]
+	dgemm = data[nodes_number + s * section_witdh : 2 * nodes_number + s * section_witdh]
+	cudgemm = data[2 * nodes_number + s * section_witdh : 3 * nodes_number + s * section_witdh]
 	n = naive[0][0]
+	print(n)
+	#print(cudgemm)
+	versions = (naive, dgemm, cudgemm)
+	communication = [array([t for *_, t, _ in version]) for version in versions]
+	computation = [array([t for *_, t in version]) for version in versions]
 
-	measures = ((naive_comm, naive_comp), (dgemm_comm, dgemm_comp))
+	measures = (communication, computation)
+	nodes = array([2 ** i for i in range(nodes_number)])
 
 	fig, ax = subplots(layout='constrained')
-	bottom = zeros(nodes)
+	bottom = zeros(nodes_number)
 	width = 0.2
 	multiplier = 0
 	i = 0
-	bar_colors = ('black', 'red',  'black', 'yellow')
-	label = ("Communication", "Naivë computation", None, "DGEMM computation")
+	bar_colors = ('black', 'black', 'black', 'red', 'yellow', 'green')
+	label = ("Communication", None, None, "Naivë computation", "DGEMM computation", "CUDGEMM computation")
 
-	for times in measures:
-		  offset = width * multiplier - width / 2
+	#print(measures)
+	for measure_type in measures:
+	  
+		for times in measure_type:
+			if i > 2:
+				bottom = measures[0][i - 3]
 		  
-		  for time in times:
-		      p = ax.bar(processors + offset, time, width, label = label[i], bottom = bottom, \
-		                 color = bar_colors[i], edgecolor = 'black')
-		      bottom += times[0] 
-		      i += 1
+			offset = width * multiplier - width
 
-		  multiplier += 1
-		  bottom = zeros(nodes)
+			p = ax.bar(nodes + offset, times, width, label = label[i], bottom = bottom, \
+						     color = bar_colors[i], edgecolor = 'black')
+						     
+			i += 1
+			multiplier += 1
+		
+		multiplier = 0
+		bottom = zeros(nodes_number)
 
-	ax.set_xticks(processors)
+	ax.set_xticks(nodes)
 	ax.set_ylabel(r"Time [$s$]")
 	ax.set_xlabel("Number of nodes")
 	ax.legend(loc = "upper right")
