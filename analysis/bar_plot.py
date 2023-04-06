@@ -25,8 +25,6 @@ for s in range(sections):
 	dgemm = data[nodes_number + s * section_witdh : 2 * nodes_number + s * section_witdh]
 	cudgemm = data[2 * nodes_number + s * section_witdh : 3 * nodes_number + s * section_witdh]
 	n = naive[0][0]
-	print(n)
-	#print(cudgemm)
 	versions = (naive, dgemm, cudgemm)
 	communication = [array([t for *_, t, _ in version]) for version in versions]
 	computation = [array([t for *_, t in version]) for version in versions]
@@ -69,5 +67,5 @@ for s in range(sections):
 	title(f"Size of matrices: {n}"+r"$\times$"+f"{n}", fontsize = 10)
 	suptitle('Communication and computation times per number of nodes', fontsize = 13, y = 1.03, x = 0.54)
 	savefig(f'analysis/{n}.png')
-	#show()
+    # show()
 
