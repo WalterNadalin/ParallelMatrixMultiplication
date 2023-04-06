@@ -72,5 +72,5 @@ These are the things done or to be done:
 3. Port on GPU 
 - [x] Include a version using `cublasDgemm` instead of the serial multiplication done by each MPI process
 - [x] Make some plots to compare performances with serial and `cblas_dgemm` versions
-- [ ] Implement a working matrix multiplication in `Cuda` og a GPU device
+- [ ] Implement a working matrix multiplication in `Cuda` on a GPU device
 - [ ] ...
