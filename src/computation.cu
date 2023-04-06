@@ -74,7 +74,7 @@ void get_counts(int *counts, int *displs, int n, int m) {
 }
 
 #ifdef CUDA
-void gather_multiplication(double *A, double *B, double *C, int n, int loc, int cnt, float *io_time, float *cp_time, double *bfr, int *counts, int *displs, MPI_Datatype cntgs, double *devA, double *devB, double *devC) {
+void gather_multiplication(double *A, double *B, int n, int loc, int cnt, float *io_time, float *cp_time, double *bfr, int *counts, int *displs, MPI_Datatype cntgs, double *devA, double *devB, double *devC) {
 #else
 void gather_multiplication(double *A, double *B, double *C, int n, int loc, int cnt, float *io_time, float *cp_time, double *bfr, int *counts, int *displs, MPI_Datatype cntgs) {
 #endif
@@ -100,21 +100,16 @@ void gather_multiplication(double *A, double *B, double *C, int n, int loc, int 
 #ifdef DGEMM  // Compute multiplication
   cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, loc, cnt, n, 1, A, n, bfr, cnt, 0, C, n);
 #elif CUDA
-  cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, cnt, loc, n, &alpha, devB, cnt, devA, n, &beta, devC, cnt);
+  cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, cnt, loc, n, &alpha, devB, cnt, devA, n, &beta, devC, n);
+  
+  cudaDeviceSynchronize();
+  cublasDestroy(handle);
 #else
   serial_multiplication(A, bfr, C, loc, cnt, n);
 #endif
 
   MPI_Barrier(MPI_COMM_WORLD);
   third = MPI_Wtime();
-
-#ifdef CUDA
-  cublasDestroy(handle);
-  cublasGetMatrix(cnt, loc, sizeof(double), devC, cnt, C, n); // Load GPU buffer into CPU
-  
-  MPI_Barrier(MPI_COMM_WORLD);
-  *io_time += MPI_Wtime() - third;
-#endif
 
   *cp_time += third - second; // Computation time of the matrix multiplicatio
 }
@@ -158,7 +153,7 @@ extern "C" void parallel_multiplication(double *A, double *B, double *C, int n, 
   
   cudaMalloc((void**)&devA, n * loc * sizeof(double));
   cudaMalloc((void**)&devB, n * cnt * sizeof(double));
-  cudaMalloc((void**)&devC, loc * cnt * sizeof(double));
+  cudaMalloc((void**)&devC, n * loc * sizeof(double));
   
   cublasSetMatrix(loc, n, sizeof(double), A, loc, devA, loc);
   
@@ -170,7 +165,7 @@ extern "C" void parallel_multiplication(double *A, double *B, double *C, int n, 
 
   for(int m = 0; m < upr; m++) 
 #ifdef CUDA
-    gather_multiplication(A, B + m * cnt, C + m * cnt, n, loc, cnt, io_time, cp_time, bfr, counts, displs, cntgs, devA, devB, devC); // Horizontal slice for each vertical slice
+    gather_multiplication(A, B + m * cnt, n, loc, cnt, io_time, cp_time, bfr, counts, displs, cntgs, devA, devB, devC + m * cnt); // Horizontal slice for each vertical slice
 #else
     gather_multiplication(A, B + m * cnt, C + m * cnt, n, loc, cnt, io_time, cp_time, bfr, counts, displs, cntgs); // Horizontal slice for each vertical slice
 #endif
@@ -181,7 +176,7 @@ extern "C" void parallel_multiplication(double *A, double *B, double *C, int n, 
     MPI_Type_commit(&cntgs);
     get_counts(counts, displs, n, rst);
 #ifdef CUDA
-    gather_multiplication(A, B + upr * cnt, C + upr * cnt, n, loc, rst, io_time, cp_time, bfr, counts, displs, cntgs, devA, devB, devC);
+    gather_multiplication(A, B + upr * cnt, n, loc, rst, io_time, cp_time, bfr, counts, displs, cntgs, devA, devB, devC + upr * cnt);
 #else
     gather_multiplication(A, B + upr * cnt, C + upr * cnt, n, loc, rst, io_time, cp_time, bfr, counts, displs, cntgs);
 #endif
@@ -190,6 +185,8 @@ extern "C" void parallel_multiplication(double *A, double *B, double *C, int n, 
 #ifdef CUDA
   MPI_Barrier(MPI_COMM_WORLD);
   first = MPI_Wtime();
+  
+  cublasGetMatrix(loc, n, sizeof(double), devC, loc, C, loc); // Load GPU buffer into CPU
   
   cudaFree(devA);
   cudaFree(devB);
