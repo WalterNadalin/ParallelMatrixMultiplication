@@ -24,29 +24,37 @@ Here, my goal is to implement a parallel code in `C` to perform such an operatio
 ### Compilation
 ---
 To **compile** it is possible to use the command 
+
 ```
-make [version] [debug=yes]
+make [version]
 ``` 
+
 where `[version]` can be either blank, `dgemm` or `cuda`. This will produce the `[version]multiplication.x` executable (the name will depend on which version it has been compiled). 
 
 ### Execution
 ---
 The executable will generate two $n\times n$ matrices with random entries and multiply them. To **run**, for example with 3 processes using $16\times 16$ matrices, it is possible either to use `mpirun -np 3 ./[version]multiplication.x 16` or to use
+
 ```bash
-make [version]run prc=3 dim=16 [debug=yes]
+make [version]run prc=3 dim=16
 ```
+
 where `[version]` can be either blank, `dgemm` or `cuda`. This will produce the `[version]multiplication.x` executable (the name will depend on how it has been compiled) and run it. 
 
 ### Test
 ---
-To **test** it is possible either to pass the `debug=yes` flag to the `Makefile`
+To **test** it is possible to pass the `debug=yes` flag to the `Makefile`
+
 ```bash
 make [version] debug=yes
 ```
+
 and then run the `[version]debug_multiplication.x` executable using `mpirun`. It is also supported the command:
+
 ```bash
 make [version]run debug=yes
 ```
+
 where `[version]` can be either blank, `dgemm` or `cuda`. This will compile (if necessary) and run immediately after.
 
 
