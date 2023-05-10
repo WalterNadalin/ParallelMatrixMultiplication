@@ -17,34 +17,19 @@ int main(int argc, char** argv) {
   MPI_Comm_size(MPI_COMM_WORLD, &prc);
 
   n = strtol(argv[1], &p, 10);
-
-  MPI_Barrier(MPI_COMM_WORLD);
-  first = MPI_Wtime();
  
-  // if(id == 0) generate_matrices(n, data);
- 
-  MPI_Barrier(MPI_COMM_WORLD);
-  second = MPI_Wtime();
-  
   rst = n % prc;
   loc = (id < rst) ? n / prc + 1 : n / prc; // Local rows number of the horizontal slices
-
-  MPI_Barrier(MPI_COMM_WORLD);
-  first = MPI_Wtime();
 
   A = (double *) malloc(n * loc * sizeof(double));
   B = (double *) malloc(n * loc * sizeof(double));
   C = calloc(n * loc, sizeof(double));
 
+  first = MPI_Wtime();
   generate_slices(A, B, n, loc); // Creates scattered slices of matrices A and B
-  // get_slices(A, B, 0, data);
-  
-  MPI_Barrier(MPI_COMM_WORLD);
   second = MPI_Wtime();
-  
-  // io_time += second - first;
 
-  parallel_multiplication(A, B, C, n, &io_time, &cp_time); // Naive or dgemm parallel multiplication
+  parallel_multiplication(A, B, C, n, &io_time, &cp_time); // Multiplication
 
 #ifdef DEBUG // Print matrices A, B and C
   char *result = "data/result.txt";
@@ -59,10 +44,10 @@ int main(int argc, char** argv) {
   distributed_print(B, n, loc, 0, data);
   distributed_print(C, n, loc, 1, result);
 
-  if(id == 0) test(data, result);
+  if(id == 0) test(data, result); // Check the correctness of the result
 #endif // 'gg', cit. Gallo
 
-  if(id == 0) {
+  if(id == 0) { // Print execution times
 #ifdef DGEMM 
     char *sign = "dgemm";
 #elif CUDA
@@ -70,6 +55,10 @@ int main(int argc, char** argv) {
 #else
     char *sign = "naive";
 #endif
+
+    printf("\n\tVersion: %s\n\tDimension of the matrices: %d\n\tNumber of processes: %d\
+	    \n\n\tGeneration time: %lf\n\tCommunication time: %lf\
+	    \n\tComputation time: %lf\n\n", sign, n, prc, second - first, io_time, cp_time);
     
     file = fopen(times, "a");
     fprintf(file, "%s %d %d %lf %lf\n", sign, n, prc, io_time, cp_time);

@@ -3,7 +3,7 @@
 
 double randfrom(double min, double max) {
   /*
-   * generate a random floating point number from min to max
+   * Generate a random floating point number from min to max.
    * */ 
   double range = (max - min); 
   double div = RAND_MAX / range;
@@ -13,8 +13,8 @@ double randfrom(double min, double max) {
 
 void print(double* A, int n, int m, FILE *file) {
   /*
-   * Prints a 2-dimensional array beginning at position `A` with dimensions `n` rows time `m` 
-   * columns.
+   * Prints a 2-dimensional array beginning at position `A` with dimensions `n` rows times
+   * `m` columns.
    * */
   int j;
 
@@ -25,7 +25,10 @@ void print(double* A, int n, int m, FILE *file) {
   }
 }
 
-void generate_matrices(int n, char *data) {
+void generate_matrices(int n, char *data) { 
+  /* 
+   * Writes on the file `data` two square matrices of dimension `n` with random entries.
+   * */
   FILE *file = fopen(data, "w");
 
   fprintf(file, "%d\n", n);
@@ -45,8 +48,8 @@ void generate_matrices(int n, char *data) {
 
 void test(char *data, char *result) {
   /*
-   * Tests with a serial matrix multiplication if the multiplication of the matrices in `data`
-   * is equal to the matrices in `result`.
+   * Tests with a serial matrix multiplication if the multiplication of the matrices in
+   * `data` is equal to the matrices in `result`.
    * */
   int n, matches;
   double *A, *B, *C;
@@ -82,9 +85,9 @@ void test(char *data, char *result) {
   }
   
   if(flag) {
-    printf("%s\nParallel and serial results are compatible\n\n", GREEN);
+    printf("%s\n\tParallel and serial results are compatible\n", GREEN);
   } else {
-    printf("%s\nParallel and serial results are NOT compatible\n\n", RED);
+    printf("%s\n\tParallel and serial results are NOT compatible\n", RED);
   }
 
   printf("%s", NORMAL);

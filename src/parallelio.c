@@ -2,6 +2,11 @@
 #include "utility.h"
 
 void generate_slices(double *A, double *B, int n, int loc) {
+  /*
+   * Generates the local horizontal slice with dimension `n * loc` and `loc * n` of
+   * the matrices `A` and `B`
+   * */
+      
   int id; 
 
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
@@ -16,8 +21,8 @@ void generate_slices(double *A, double *B, int n, int loc) {
 
 void distributed_print(double* A, int n, int m, int clear, char *name) {
   /*
-   * Prints a 2-dimensional array of which the parts are distributed among different MPI processes as
-   * vertical slices.
+   * Prints a 2-dimensional array of which the parts are distributed among different MPI
+   * processes as vertical slices.
    * */
   int id, prc, loc, rst, cnt; 
 
@@ -52,8 +57,8 @@ void distributed_print(double* A, int n, int m, int clear, char *name) {
 
 void get_dimension(int root, int *n, char *name) {
   /*
-   * Gets the dimension of the square matrix from the file called `name`, it is supposed that the 
-   * dimension is the first entry of the file.
+   * Gets the dimension of the square matrix from the file called `name`, it is supposed
+   * that the dimension is the first entry of the file.
    * */
   int id, matches; 
 
@@ -69,6 +74,10 @@ void get_dimension(int root, int *n, char *name) {
 }
 
 void get_matrix(double *A, int n, int root, FILE *file) {
+  /*
+   * Scatter a square matrix of dimension `n` written on the file `file` and to each process
+   * writing each horizontal slice in `A`
+   * */
   int m, id, prc;
 
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
@@ -76,7 +85,7 @@ void get_matrix(double *A, int n, int root, FILE *file) {
   
   m = (id < n % prc) ? n / prc + 1 : n / prc; // Local rows number of the horizontal slices
   
-  if(id == root) { // The root reads the first matrix and sends parts of it
+  if(id == root) { // The root reads the matrix and sends parts of it
     double *bfr;
     int cnt, j, matches;
     
@@ -98,8 +107,8 @@ void get_matrix(double *A, int n, int root, FILE *file) {
 
 void get_slices(double *A, double *B, int root, char *name) {
   /*
-   * Reads the matries `A` and `B` to be multiplied from a file and scatters them, by dividing them
-   * in vertical sliced, to each process.
+   * Reads the matries `A` and `B` to be multiplied from a file and scatters them, by 
+   * dividing them in vertical slices, to each process.
    * */
   int n, id, matches;
   FILE *file;

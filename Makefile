@@ -1,49 +1,65 @@
-IBLAS = -I${OPENBLAS_HOME}/include/
-LBLAS = -L${OPENBLAS_HOME}/lib/ -lopenblas -lgfortran
-LCUDA = -L${CUDA_HOME}/lib64/ -lcublas -lcudart
-IMPI = -I${SMPI_ROOT}/include
-LMPI = -L${SMPI_ROOT}/lib -lmpiprofilesupport -lmpi_ibm
+prc ?= 4
+dim ?= 333
+debug ?= no
 
-# Note to self: Makefile goes brrrrr
-CXXFLAGS = -O3
-EXE = multiplication.x
-INCLUDE = -I./include/
-TARGETS = multiplication_.o src/parallelio_.o src/utility_.o src/computation.o
-LINK = $(LCUDA)
+# Fantastic libraries and where to find them
+IBLAS := -I${OPENBLAS_HOME}/include/
+LBLAS := -L${OPENBLAS_HOME}/lib/ -lopenblas -lgfortran
+LCUDA := -L${CUDA_HOME}/lib64/ -lcublas -lcudart
+IMPI := -I${SMPI_ROOT}/include
+CXXFLAGS := -O3
+INCLUDE := -I./include/
+LINK := $(LCUDA)
+
+# Files
+MAIN = $(wildcard *.c)
+EXE := $(MAIN:.c=.x)
+SRC := $(wildcard src/*.c*) $(MAIN)
+OBJ := $(patsubst %.cu, %.o, $(patsubst %.c, %.o, $(SRC)))
 
 # Conditional flag to toggle the debugging
-ifdef flag
-	ifeq ($(flag), debug)
-		CXXFLAGS += -DDEBUG
-	endif
+ifeq ($(debug), yes)
+	CXXFLAGS += -DDEBUG
+	EXE := debug_$(EXE)
 endif
 
 # Updating the dependencing in the three cases
-.PHONY: all
-all: $(EXE) 
+all: $(EXE)
 
-.PHONY: dgemm
 dgemm: CXXFLAGS += -DDGEMM
 dgemm: INCLUDE += $(IBLAS)
 dgemm: LINK += $(LBLAS)
-dgemm: $(EXE)
+dgemm: dgemm_$(EXE)
 
-.PHONY: cuda
 cuda: CXXFLAGS += -DCUDA 
-cuda: $(EXE)
+cuda: cuda_$(EXE)
 
 # Compiling the object files
-%_.o: %.c 
+%.o: %.c 
 	mpicc -c $< -o $@ $(CXXFLAGS) $(INCLUDE)
 
-src/computation.o: src/computation.cu # Stupid cuda, you make me look bad
+%.o: %.cu
 	nvcc -c $< -o $@ $(IMPI) $(INCLUDE) $(CXXFLAGS) -lcublas -lcudart 
 
-# Creating the executable
-$(EXE): $(TARGETS)
-	mpicc -o $(EXE) $^ $(LINK) -O3
-	@rm ./*.o src/*.o
+# Linking the executable
+%.x: $(OBJ)
+	mpicc -o $@ $^ $(LINK) -O3
 
-.PHONY: clean
+# Running
+run: $(EXE)
+	mpirun -np $(prc) --map-by socket --bind-to core ./$^ $(dim)
+
+dgemm_run: dgemm
+	mpirun -np $(prc) --map-by socket --bind-to core ./dgemm_$(EXE) $(dim)
+
+cuda_run: cuda
+	mpirun -np $(prc) --map-by socket --bind-to core ./cuda_$(EXE) $(dim)
+
 clean:
-	rm ./*.o src/*.o ./*.x #./slurm-*
+	@rm -f ./*.x
+
+flush:
+	@rm -f ./data/matrices.txt ./data/result.txt
+
+.PHONY: all dgemm cuda clean flush run
+.INTERMEDIATE: $(OBJ)
