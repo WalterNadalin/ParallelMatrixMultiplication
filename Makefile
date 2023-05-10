@@ -1,38 +1,44 @@
-prc ?= 4
-dim ?= 333
-debug ?= no
+prc       ?= 4
+dim       ?= 1000
+option    ?= generate
+debug     ?= no
+pernode   ?= 4
+persocket ?= 2
 
 # Fantastic libraries and where to find them
-IBLAS := -I${OPENBLAS_HOME}/include/
-LBLAS := -L${OPENBLAS_HOME}/lib/ -lopenblas -lgfortran
-LCUDA := -L${CUDA_HOME}/lib64/ -lcublas -lcudart
-IMPI := -I${SMPI_ROOT}/include
+IBLAS    := -I${OPENBLAS_HOME}/include/
+LBLAS    := -L${OPENBLAS_HOME}/lib/ -lopenblas -lgfortran
+LCUDA    := -L${CUDA_HOME}/lib64/ -lcublas -lcudart
+IMPI     := -I${SMPI_ROOT}/include
+
+# Flags
+INCLUDE  := -I./include/
+LINK     := $(LCUDA)
 CXXFLAGS := -O3
-INCLUDE := -I./include/
-LINK := $(LCUDA)
+RUNFLAGS := -npersocket $(persocket) -npernode $(pernode) --bind-to core
 
 # Files
-MAIN = $(wildcard *.c)
-EXE := $(MAIN:.c=.x)
-SRC := $(wildcard src/*.c*) $(MAIN)
-OBJ := $(patsubst %.cu, %.o, $(patsubst %.c, %.o, $(SRC)))
+MAIN := $(wildcard *.c)
+EXE  := $(MAIN:.c=.x)
+SRC  := $(wildcard src/*.c*) $(MAIN)
+OBJ  := $(patsubst %.cu, %.o, $(patsubst %.c, %.o, $(SRC)))
 
 # Conditional flag to toggle the debugging
 ifeq ($(debug), yes)
 	CXXFLAGS += -DDEBUG
-	EXE := debug_$(EXE)
+	EXE := $(EXE:.x=_debug.x)
 endif
 
 # Updating the dependencing in the three cases
 all: $(EXE)
 
 dgemm: CXXFLAGS += -DDGEMM
-dgemm: INCLUDE += $(IBLAS)
-dgemm: LINK += $(LBLAS)
-dgemm: dgemm_$(EXE)
+dgemm: INCLUDE  += $(IBLAS)
+dgemm: LINK     += $(LBLAS)
+dgemm: dgemm$(EXE)
 
-cuda: CXXFLAGS += -DCUDA 
-cuda: cuda_$(EXE)
+cuda: CXXFLAGS += -DCUDA
+cuda: cuda$(EXE)
 
 # Compiling the object files
 %.o: %.c 
@@ -47,13 +53,10 @@ cuda: cuda_$(EXE)
 
 # Running
 run: $(EXE)
-	mpirun -np $(prc) --map-by socket --bind-to core ./$^ $(dim)
+	mpirun -np $(prc) $(RUNFLAGS) ./$^ $(option) $(dim)
 
-dgemm_run: dgemm
-	mpirun -np $(prc) --map-by socket --bind-to core ./dgemm_$(EXE) $(dim)
-
-cuda_run: cuda
-	mpirun -np $(prc) --map-by socket --bind-to core ./cuda_$(EXE) $(dim)
+%run: % 
+	mpirun -np $(prc) $(RUNFLAGS) ./$^$(EXE) $(option) $(dim)
 
 clean:
 	@rm -f ./*.x

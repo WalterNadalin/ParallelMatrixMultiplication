@@ -16,36 +16,36 @@ module load autoload spectrum_mpi
 module load autoload openblas
 export OMP_NUM_THREADS=1
 
+make clean
+make
+make dgemm
+make cuda
+
 for dim in {5000..25000..5000}
 do
-	make
 	prc=32
 
 	for _ in {1..4}
 	do
-		mpirun -np $prc -npernode 32 --map-by socket --bind-to core ./multiplication.x $dim 
+		make run prc=$prc pernode=32 persocket=16 dim=$dim
 		((prc*=2))
 	done
 
-	make clean
-	make dgemm
 	prc=32
 
 	for value in {1..4}
 	do
-		mpirun -np $prc -npernode 32 --map-by socket --bind-to core ./multiplication.x $dim 
+		make dgemmrun prc=$prc pernode=32 persocket=16 dim=$dim
 		((prc*=2))
 	done
 
-	make clean
-	make cuda
 	prc=4
 
 	for value in {1..4}
 	do
-		mpirun -np $prc -npernode 4 -npersocket 2 --bind-to core ./multiplication.x $dim 
+		make cudarun prc=$prc pernode=4 persocket=2 dim=$dim
 		((prc*=2))
 	done
-
-	make clean
 done
+
+make clean
