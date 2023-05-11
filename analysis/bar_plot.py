@@ -64,8 +64,9 @@ for s in range(sections):
 	ax.legend(loc = "upper right")
 	ax.grid(linestyle = '--', axis = 'y')
 
-	title(f"Size of matrices: {n}"+r"$\times$"+f"{n}", fontsize = 10)
-	suptitle('Communication and computation times per number of nodes', fontsize = 13, y = 1.03, x = 0.54)
+	title(r"$\bf{Communication}$ $\bf{and}$ $\bf{computation}$ $\bf{times}$ $\bf{per}$" + \
+		  	r' $\bf{number}$ ' + r'$\bf{of}$ $\bf{nodes}$'+ f"\nSize of matrices: {n}"+r"$\times$"+f"{n}", fontsize = 10)
+
 	savefig(f'analysis/{n}.png')
     # show()
 
